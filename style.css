@@ -1,40 +1,57 @@
-/* ===== Large CRT-style glowing cursor ===== */
+/* ===== CRT Cursor (animated) + fallback ===== */
 
-/* Base cursor (default) */
-html, body {
-  cursor: url("data:image/svg+xml;utf8,\
+/* Hide native cursor when our JS is active */
+body.crt-cursor-on, body.crt-cursor-on * { cursor: none !important; }
+
+/* Cursor element */
+.crt-cursor{
+  position: fixed;
+  left: 0; top: 0;
+  width: 48px; height: 48px;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, filter, opacity;
+  /* Glow + subtle pulse */
+  animation: crt-cursor-pulse 1.2s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,0.85))
+    drop-shadow(0 0 22px rgba(0,255,153,0.55));
+}
+
+/* Shapes via SVG data-URI (white, scalable, crisp) */
+.crt-cursor.arrow{
+  background-image: url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>\
-<polygon points='0,0 0,40 12,28 20,48 26,46 18,26 36,26' fill='white' filter='url(#glow)'/>\
-<defs>\
-<filter id='glow' x='-50%' y='-50%' width='200%' height='200%'>\
-  <feGaussianBlur in='SourceGraphic' stdDeviation='2' result='blur'/>\
-  <feMerge>\
-    <feMergeNode in='blur'/>\
-    <feMergeNode in='SourceGraphic'/>\
-  </feMerge>\
-</filter>\
-</defs>\
-</svg>") 0 0, auto;
+<polygon points='2,2 2,40 14,28 21,47 27,45 19,26 37,26' fill='white'/>\
+</svg>");
+  background-repeat: no-repeat; background-position: 0 0; background-size: 48px 48px;
 }
 
-/* Pointer cursor (links, buttons) */
-a, button, .btn, .titlelink {
-  cursor: url("data:image/svg+xml;utf8,\
+/* Round pointer for links/buttons */
+.crt-cursor.pointer{
+  background-image: url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>\
-<circle cx='24' cy='24' r='8' fill='white' filter='url(#glow)'/>\
-<defs>\
-<filter id='glow' x='-50%' y='-50%' width='200%' height='200%'>\
-  <feGaussianBlur in='SourceGraphic' stdDeviation='2' result='blur'/>\
-  <feMerge>\
-    <feMergeNode in='blur'/>\
-    <feMergeNode in='SourceGraphic'/>\
-  </feMerge>\
-</filter>\
-</defs>\
-</svg>") 12 12, pointer;
+<circle cx='24' cy='24' r='9' fill='white'/>\
+</svg>");
+  background-repeat: no-repeat; background-position: 0 0; background-size: 48px 48px;
 }
 
-/* Text entry cursor */
-input, textarea {
-  cursor: text;
+/* I-beam for text fields */
+.crt-cursor.ibeam{
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>\
+<rect x='22' y='8' width='4' height='32' rx='1' fill='white'/>\
+<rect x='16' y='10' width='16' height='2' fill='white'/>\
+<rect x='16' y='36' width='16' height='2' fill='white'/>\
+</svg>");
+  background-repeat: no-repeat; background-position: 0 0; background-size: 48px 48px;
 }
+
+/* Pulse animation tuned for CRT vibe */
+@keyframes crt-cursor-pulse{
+  0%   { transform: translate(var(--cx,0px), var(--cy,0px)) scale(1);    opacity: 0.95; filter: drop-shadow(0 0 8px #ffffffcc) drop-shadow(0 0 22px #00ff9980); }
+  50%  { transform: translate(var(--cx,0px), var(--cy,0px)) scale(0.985); opacity: 0.80; filter: drop-shadow(0 0 12px #ffffffff) drop-shadow(0 0 32px #00ff99aa); }
+  100% { transform: translate(var(--cx,0px), var(--cy,0px)) scale(1);    opacity: 0.95; filter: drop-shadow(0 0 8px #ffffffcc) drop-shadow(0 0 22px #00ff9980); }
+}
+
+/* --- Your existing site styles (CRT background, fonts, etc.) can remain as-is below this line --- */
