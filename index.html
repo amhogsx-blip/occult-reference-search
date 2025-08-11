@@ -70,18 +70,16 @@
     text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
   }
 
-  /* ===== Idle Slime Overlay — DRIPPY VERSION (fixed) ===== */
-  .slime-wrap{
-    position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .6s ease;
-    z-index:9998;
-  }
-  body.slimed .slime-wrap{ opacity:1; pointer-events:auto; }
+  /* ===== Idle Slime styles (element injected at runtime) ===== */
+  .slime-wrap{ position:fixed; inset:0; display:none; z-index:9998; }
+  .slime-wrap.show{ display:block; animation: slime-fade .6s ease; }
+  @keyframes slime-fade{ from{opacity:0} to{opacity:1} }
 
-  /* off-screen by default; no animation until shown */
   .slime{
     position:absolute; left:0; right:0; top:-110%; height:130%;
     transform: translateY(0);
 
+    /* milky/translucent pink layers */
     background:
       radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),
       radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),
@@ -91,6 +89,7 @@
     -webkit-backdrop-filter: blur(2px);
     box-shadow: 0 6px 18px rgba(255,105,180,.25);
 
+    /* Drip edge mask */
     -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='white'/><stop offset='70%' stop-color='white'/><stop offset='100%' stop-color='black'/></linearGradient></defs><rect x='0' y='0' width='1200' height='600' fill='url(#g)'/><g fill='black'><path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/></g></svg>");
     mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='white'/><stop offset='70%' stop-color='white'/><stop offset='100%' stop-color='black'/></linearGradient></defs><rect x='0' y='0' width='1200' height='600' fill='url(#g)'/><g fill='black'><path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/></g></svg>");
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
@@ -98,8 +97,8 @@
     -webkit-mask-position: top center; mask-position: top center;
   }
 
-  /* animate ONLY when shown */
-  body.slimed .slime{
+  /* When we add .animate after insertion, run the drop + wobble + glow */
+  .slime.animate{
     animation:
       slime-ooze 18s ease-in forwards,
       slime-wobble 6s ease-in-out infinite,
@@ -132,9 +131,10 @@
     100% { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
   }
 
+  /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce){
-    body.slimed .slime{ animation: none; top:0; }
-    .slime-wrap{ transition: none; }
+    .slime.animate{ animation: none; top:0; }
+    .slime-wrap.show{ animation: none; }
   }
 
   @media (max-width:520px){
@@ -175,18 +175,12 @@
     <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
   </footer>
 
-  <!-- Slime overlay (hidden until idle) -->
-  <div class="slime-wrap" id="slimeWrap" aria-hidden="true">
-    <div class="slime" id="slime"></div>
-    <button class="slime-dismiss" id="slimeDismiss" aria-label="Dismiss slime">×</button>
-  </div>
-
   <!-- Search -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
     let data = [], index, byUrl = new Map();
 
-    /* FIXED: escapeRegExp to prevent script-crash */
+    // Correct regex (prevents script crash)
     function escapeRegExp(s){
       return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
@@ -273,32 +267,49 @@
     });
   </script>
 
-  <!-- Idle Slime Controller (fixed; restart animation each time; debug ?slime=1) -->
+  <!-- Idle Slime (DYNAMIC: element is injected only when needed) -->
   <script>
     (function(){
       const IDLE_MS = 45000; // 45s
-      const wrap = document.getElementById('slimeWrap');
-      const panel = document.getElementById('slime');
-      const btn  = document.getElementById('slimeDismiss');
-      let t, slimed = false;
+      let t, slimed = false, wrap=null, panel=null, btn=null;
+
+      function build(){
+        if (wrap) return;
+        wrap = document.createElement('div');
+        wrap.className = 'slime-wrap';
+        wrap.innerHTML = `
+          <div class="slime"></div>
+          <button class="slime-dismiss" aria-label="Dismiss slime">×</button>
+        `;
+        document.body.appendChild(wrap);
+        panel = wrap.querySelector('.slime');
+        btn = wrap.querySelector('.slime-dismiss');
+
+        // Dismiss handlers
+        btn.addEventListener('click', (e)=>{ e.stopPropagation(); hideSlime(); arm(); });
+        wrap.addEventListener('click', ()=>{ hideSlime(); arm(); });
+        window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hideSlime(); arm(); }});
+      }
 
       function showSlime(){
         if (slimed) return;
+        build();
         slimed = true;
+        wrap.classList.add('show');
 
-        // Restart CSS animation reliably each time
-        panel.style.animation = 'none';
-        void panel.offsetWidth;  // reflow
-        panel.style.animation = '';
-
-        document.body.classList.add('slimed');
-        wrap.setAttribute('aria-hidden', 'false');
+        // restart animation cleanly
+        panel.classList.remove('animate');
+        // ensure next frame
+        requestAnimationFrame(()=>{ panel.classList.add('animate'); });
       }
 
       function hideSlime(){
+        if (!slimed) return;
         slimed = false;
-        document.body.classList.remove('slimed');
-        wrap.setAttribute('aria-hidden', 'true');
+        if (wrap){
+          wrap.classList.remove('show');
+          panel.classList.remove('animate');
+        }
       }
 
       function arm(){
@@ -312,12 +323,7 @@
         window.addEventListener(ev, arm, {passive:true});
       });
 
-      // Dismiss
-      btn.addEventListener('click', (e)=>{ e.stopPropagation(); hideSlime(); arm(); });
-      wrap.addEventListener('click', ()=>{ hideSlime(); arm(); });
-      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hideSlime(); arm(); }});
-
-      // Debug trigger: ?slime=1 → show immediately
+      // Debug: ?slime=1 → show immediately
       if (new URLSearchParams(location.search).get('slime') === '1') {
         setTimeout(showSlime, 600);
       }
