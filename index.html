@@ -51,4 +51,146 @@
   /* Bottom nav (includes Home for consistency) */
   .btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;padding:0 16px;flex-wrap:wrap}
   .btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
-  .btn:hover{color:#fff;text-decora
+  .btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
+
+  .results{max-width:960px;width:92vw;margin:0 auto 32px;display:grid;gap:12px}
+  .card{border:1px solid var(--border);padding:14px;background:#000}
+  .src{color:var(--accent);font-size:10px;margin-bottom:6px}
+  .titlelink{color:var(--accent);text-decoration:underline}
+  .snippet{color:var(--accent);margin-top:4px}
+
+  footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
+  .small{font-size:10px}
+
+  /* highlight */
+  mark{
+    background:transparent;color:var(--accent);padding:0;
+    text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
+  }
+
+  @media (max-width:520px){
+    .title{font-size:22px}
+    .label{display:none}
+    .btn{font-size:14px;text-underline-offset:6px}
+    .btnbar{gap:24px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="title">The Occult Reference Net</div>
+
+  <div class="logo-wrap">
+    <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
+  </div>
+
+  <div class="search-wrap">
+    <div class="label">Search:</div>
+    <div class="field">
+      <input id="q" type="search" placeholder="TYPE SEARCH TERMS…">
+      <button id="go" aria-label="Search"><span class="mag" aria-hidden="true"></span></button>
+    </div>
+  </div>
+
+  <nav class="btnbar" aria-label="Quick links">
+    <a class="btn" href="index.html">Home</a>
+    <a class="btn" href="about.html">About</a>
+    <a class="btn" href="contact.html">Contact</a>
+    <a class="btn" href="sponsors.html">Sponsors</a>
+    <a class="btn" href="forum.html">Forum</a>
+  </nav>
+
+  <div id="results" class="results"></div>
+
+  <footer>
+    <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
+  </footer>
+
+  <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
+  <script>
+    let data = [], index, byUrl = new Map();
+
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function highlight(text, query){
+      if(!text || !query) return text || "";
+      const terms = [...new Set(query.trim().split(/\s+/).filter(Boolean))];
+      if(!terms.length) return text;
+      const re = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
+      return text.replace(re, "<mark>$1</mark>");
+    }
+
+    async function load(){
+      const r = await fetch("index.json",{cache:"no-store"});
+      data = await r.json();
+      byUrl.clear();
+      for(const d of data){ if(d && d.url) byUrl.set(d.url, d); }
+      index = new FlexSearch.Document({
+        document: { id: "url", index: ["title","snippet","author","tags"] },
+        tokenize: "forward"
+      });
+      for(const d of data){ try{ index.add(d); }catch(_){} }
+    }
+
+    function fallbackSearch(q){
+      const qlc = q.toLowerCase();
+      return data.filter(d =>
+        (d.title||"").toLowerCase().includes(qlc) ||
+        (d.snippet||"").toLowerCase().includes(qlc) ||
+        (d.author||"").toLowerCase().includes(qlc) ||
+        (d.collection||"").toLowerCase().includes(qlc)
+      ).map(d => d.url);
+    }
+
+    async function run(query){
+      const qInput = document.getElementById('q');
+      const q = (query !== undefined ? query : qInput.value).trim();
+      const box = document.getElementById('results');
+      if(!index) await load();
+      if(!q){ box.innerHTML = ""; return; }
+      let results = index.search(q, { enrich:true });
+      let ids = [...new Set(results.flatMap(r => r.result))];
+      if(ids.length === 0){ ids = fallbackSearch(q); }
+      const hits = ids.map(u => byUrl.get(u)).filter(Boolean).slice(0,50);
+      box.innerHTML = hits.length ? "" : "<div class='card'>No results. Try broader terms.</div>";
+      for(const h of hits){
+        const el = document.createElement('div'); el.className = "card";
+        const title = highlight(h.title || h.url, q);
+        const snippet = highlight(h.snippet || "", q);
+        el.innerHTML = `
+          <div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div>
+          <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a>
+          <div class="snippet">${snippet}</div>
+          <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
+        box.appendChild(el);
+      }
+    }
+
+    function debounce(fn, delay=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), delay); }; }
+    const runDebounced = debounce(run, 250);
+
+    document.getElementById('go').onclick = () => run();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const defaultQuery = "Are you the Keymaster?";
+      const qInput = document.getElementById('q');
+      qInput.style.color = "#888";
+      qInput.value = defaultQuery;
+
+      function setDefault(){ qInput.value = defaultQuery; qInput.style.color = "#888"; }
+      function clearDefault(){ if(qInput.value === defaultQuery){ qInput.value = ""; qInput.style.color = "#fff"; } }
+
+      qInput.addEventListener('focus', clearDefault);
+      qInput.addEventListener('blur', () => { if(qInput.value.trim()==="") setDefault(); });
+      qInput.addEventListener('input', () => {
+        if(qInput.value === defaultQuery) return;
+        qInput.style.color = "#fff";
+        if(qInput.value.trim()===""){ document.getElementById('results').innerHTML=""; return; }
+        runDebounced(qInput.value);
+      });
+      qInput.addEventListener('keydown', e => { if(e.key==="Enter"){ e.preventDefault(); run(); } });
+
+      run(defaultQuery);
+    });
+  </script>
+</body>
+</html>
