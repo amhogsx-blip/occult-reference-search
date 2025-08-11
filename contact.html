@@ -1,53 +1,30 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contact - The Occult Reference Net</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#000; --fg:#fff; --muted:#bbb; --accent:#00ff99; --border:#333 }
-  html,body{ margin:0; height:100%; background:var(--bg); color:var(--fg);
-    font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.5 }
-  body::before, body::after{ content:""; position:fixed; inset:0; pointer-events:none; z-index:9999 }
-  body::before{
-    background: linear-gradient(rgba(0,255,153,.06), rgba(0,255,153,.06)) 0 0/100% 100%,
-               repeating-linear-gradient(0deg, rgba(0,255,153,.08) 0, rgba(0,255,153,.08) 1px, transparent 2px, transparent 4px);
-    mix-blend-mode:screen; animation:scan 6s linear infinite
-  }
-  body::after{ box-shadow: inset 0 0 120px rgba(0,255,153,.12), inset 0 0 280px rgba(0,255,153,.08) }
-  @keyframes scan{0%{opacity:.22}45%{opacity:.28}50%{opacity:.2}55%{opacity:.28}100%{opacity:.22}}
-  .wrap{ max-width:960px; margin:0 auto; padding:20px }
-  h1{ color:var(--accent); text-align:center; margin:0 0 20px }
-  p{ margin:0 0 14px }
-  a{ color:var(--accent); text-decoration:none } a:hover{ text-decoration:underline }
-  .block{ border:1px solid var(--border); padding:16px; margin-top:12px }
-  .small{ color:var(--muted); font-size:10px }
-  .back{ text-align:center; margin-top:28px }
+/* Same styles as about.html — copy exactly */
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>CONTACT</h1>
-
-    <div class="block">
-      <p>Email us:</p>
-      <p><a href="mailto:contact@theoccultreference.net?subject=T.O.R.N.%20Inquiry">contact@theoccultreference.net</a></p>
-      <p class="small">Tip: include links, dates, and any relevant evidence. Our archivists love details.</p>
-    </div>
-
-    <div class="block">
-      <p>Submit materials (docs, scans, sightings):</p>
-      <p><a href="mailto:submissions@theoccultreference.net?subject=Submission%20to%20T.O.R.N.">submissions@theoccultreference.net</a></p>
-      <p class="small">By sending materials you confirm you have the rights to share them.</p>
-    </div>
-
-    <div class="block">
-      <p>Press & interviews:</p>
-      <p><a href="mailto:press@theoccultreference.net?subject=Press%20Inquiry">press@theoccultreference.net</a></p>
-    </div>
-
-    <p class="back"><a href="index.html">← Back to Home</a></p>
-  </div>
+<div class="title">Contact</div>
+<div class="logo-wrap">
+  <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
+</div>
+<nav class="btnbar">
+  <a class="btn" href="about.html">About</a>
+  <a class="btn" href="contact.html">Contact</a>
+  <a class="btn" href="sponsors.html">Sponsors</a>
+  <a class="btn" href="forum.html">Forum</a>
+</nav>
+<div class="content">
+For paranormal tips, submissions, or to report strange and unusual activity, please email:
+contact@theoccultreference.net
+</div>
+<footer>
+  <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
+</footer>
 </body>
 </html>
