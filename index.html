@@ -1,140 +1,109 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Pixel headline option; system font for body for speed -->
+<!-- Retro pixel font -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --bg:#ffffff; --fg:#111; --muted:#5a5a5a; --accent:#0a7c56; --border:#e7e7e7;
-    --nav:#2d2d2d; --hero:#f6faf8; --chip:#0a7c56;
+    --bg:#000; --fg:#fff; --muted:#bbb; --accent:#00ff99; --border:#333;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  a{color:inherit;text-decoration:none}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
+    display:flex; flex-direction:column;
+  }
+  a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
 
-  /* Top utility bar (optional) */
-  .topbar{background:#fff;border-bottom:1px solid var(--border)}
-  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:13px;color:var(--muted)}
-  .social a{margin-left:12px}
+  /* Header title */
+  .title{
+    margin:28px 12px 10px; text-align:center;
+    font-size:clamp(22px,5vw,46px); letter-spacing:2px;
+    text-shadow:0 0 8px rgba(0,255,153,.2);
+  }
 
-  /* Header with logo/title + nav */
-  header{background:#fff;border-bottom:1px solid var(--border)}
-  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
-  .header-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
-  .brand{display:flex;align-items:center;gap:14px}
-  .logo{width:56px;height:56px;background:#eaeaea;border-radius:8px;display:inline-block}
-  .site-title{line-height:1.1}
-  .site-title h1{margin:0;font-size:clamp(22px,4vw,36px);font-weight:800;letter-spacing:.2px}
-  .site-title .sub{font-family:"Press Start 2P",monospace;font-size:11px;color:var(--accent);margin-top:2px}
+  /* Centered logo */
+  .logo-wrap{display:flex; justify-content:center; margin:10px 0 18px}
+  .logo{
+    width:min(520px,80vw); height:auto; image-rendering:pixelated; image-rendering:crisp-edges;
+    filter: drop-shadow(0 0 18px rgba(0,0,0,.6));
+  }
 
-  nav .menu{display:flex;gap:18px;font-size:15px;color:var(--nav);flex-wrap:wrap}
-  nav .menu a{padding:6px 4px;border-radius:6px}
-  nav .menu a:hover{background:#f3f3f3;text-decoration:none}
-
-  /* Hero band */
-  .hero{background:var(--hero);border-bottom:1px solid var(--border)}
-  .hero .wrap{padding:26px 20px}
-  .tagline{color:var(--muted);font-size:15px;margin:6px 0 0}
-  .search-card{margin:18px 0 6px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
-  .search-row{display:flex;gap:10px;flex-wrap:wrap}
-  input[type="search"]{flex:1;min-width:260px;background:#fff;border:1.5px solid #cfcfcf;border-radius:10px;padding:12px 14px;font-size:15px}
-  button{background:var(--chip);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer}
+  /* Search row centered */
+  .search-wrap{
+    display:flex; justify-content:center; align-items:center; gap:12px;
+    margin:6px auto 24px; padding:0 16px; width:100%;
+  }
+  .label{font-size:14px; color:var(--fg)}
+  .field{
+    display:flex; align-items:stretch; gap:0;
+    border:2px solid var(--fg); background:#111;
+  }
+  input[type="search"]{
+    width:min(560px,70vw); padding:12px 14px; border:0; outline:none;
+    background:#fff; color:#000; font-family:inherit; font-size:12px;
+  }
+  button{
+    background:#222; color:#fff; border:0; width:42px; padding:0 0; cursor:pointer;
+    border-left:2px solid var(--fg);
+  }
   button:active{transform:translateY(1px)}
+  .mag{display:inline-block; width:100%; height:100%; font-size:16px}
+  .mag::before{content:"\1F50D"; display:block; line-height:42px; text-align:center}
 
-  /* Results list */
-  .content .wrap{padding:20px}
-  .results{display:grid;gap:12px}
-  .card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
-  .src{color:#2e6c55;font-size:12px;margin-bottom:4px}
+  /* Results area */
+  .results{
+    max-width:960px; width:92vw; margin:0 auto 32px; display:grid; gap:12px;
+  }
+  .card{border:1px solid var(--border); padding:14px; background:#000}
+  .src{color:var(--accent); font-size:10px; margin-bottom:6px}
+  .titlelink{color:#fff; text-decoration:underline}
+  .snippet{color:#ddd; margin-top:4px}
 
-  /* Footer */
-  footer{border-top:1px solid var(--border);margin-top:24px;background:#fff}
-  footer .wrap{padding:18px 20px;text-align:center;color:var(--muted);font-size:13px}
+  /* Footer line */
+  footer{margin-top:auto; padding:18px 10px; text-align:center; color:var(--muted); border-top:1px solid var(--border)}
+  .small{font-size:10px}
 
-  /* Mobile nav stacking */
-  @media (max-width:720px){
-    .header-row{flex-direction:column;align-items:flex-start;gap:10px}
-    nav .menu{gap:12px}
+  @media (max-width:520px){
+    .title{font-size:22px}
+    .label{display:none} /* save space on tiny screens */
   }
 </style>
 </head>
 <body>
 
-  <!-- (Optional) topbar -->
-  <div class="topbar">
-    <div class="wrap">
-      <div>Welcome to T.O.R.N.</div>
-      <div class="social">
-        <!-- replace with your links or remove -->
-        <a href="#" aria-label="X">X</a>
-        <a href="#" aria-label="Instagram">Instagram</a>
-      </div>
+  <div class="title">The Occult Reference Net</div>
+
+  <div class="logo-wrap">
+    <!-- Put GB-Logo_TORN.png in the SAME folder as index.html -->
+    <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
+  </div>
+
+  <div class="search-wrap">
+    <div class="label">Search:</div>
+    <div class="field">
+      <input id="q" type="search" placeholder="TYPE SEARCH TERMS…">
+      <button id="go" aria-label="Search"><span class="mag" aria-hidden="true"></span></button>
     </div>
   </div>
 
-  <!-- Header: brand + nav -->
-  <header>
-    <div class="wrap">
-      <div class="header-row">
-        <div class="brand">
-          <!-- Replace this placeholder with your logo image: <img src="logo.png" alt="T.O.R.N." class="logo"> -->
-          <span class="logo" aria-hidden="true"></span>
-          <div class="site-title">
-            <h1>The Occult Reference Net</h1>
-            <div class="sub">T.O.R.N.</div>
-          </div>
-        </div>
-        <nav>
-          <div class="menu">
-            <!-- Point these to your real pages (Google Site or elsewhere) -->
-            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">About</a>
-            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Contact</a>
-            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Sponsors</a>
-            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Forum</a>
-          </div>
-        </nav>
-      </div>
-    </div>
-  </header>
-
-  <!-- Hero band with single search -->
-  <section class="hero">
-    <div class="wrap">
-      <div style="font-weight:700;font-size:18px">Search the Occult Reference Net</div>
-      <div class="tagline">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989</div>
-
-      <div class="search-card">
-        <div class="search-row">
-          <input id="q" type="search" placeholder="Search grimoires, witch trials, alchemy, ESP…">
-          <button id="go">Search</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Results area -->
-  <main class="content">
-    <div class="wrap">
-      <div id="results" class="results"></div>
-    </div>
-  </main>
+  <div id="results" class="results"></div>
 
   <footer>
-    <div class="wrap">
-      Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.
-    </div>
+    <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
   </footer>
 
   <!-- Client-side search (FlexSearch) -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
     let data=[], index;
+
     async function load(){
       const r=await fetch("index.json",{cache:"no-store"});
       data=await r.json();
@@ -144,28 +113,37 @@
       });
       for(const d of data) index.add(d);
     }
-    async function run(){
-      const q=document.getElementById('q').value.trim();
+
+    async function run(query){
+      const q = query !== undefined ? query.trim() : document.getElementById('q').value.trim();
       const box=document.getElementById('results');
       if(!index) await load();
-      if(!q){ box.innerHTML="<div class='card'>Type a query, then press Search.</div>"; return; }
+      if(!q){ box.innerHTML=""; return; }
       const results = index.search(q,{enrich:true});
       const ids = [...new Set(results.flatMap(r => r.result))];
       const hits = ids.map(id => data.find(d => d.id===id)).filter(Boolean).slice(0,50);
-      box.innerHTML="";
-      if(!hits.length){ box.innerHTML="<div class='card'>No results. Try broader terms.</div>"; return; }
+      box.innerHTML = hits.length ? "" : "<div class='card'>No results. Try broader terms.</div>";
       for(const h of hits){
         const el=document.createElement('div'); el.className="card";
         el.innerHTML = `
           <div class="src">${h.collection||h.source} · ${h.type||"page"}</div>
-          <a href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
-          <div>${h.snippet||""}</div>
+          <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
+          <div class="snippet">${h.snippet||""}</div>
           <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
         box.appendChild(el);
       }
     }
-    document.getElementById('go').onclick=run;
-    document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==="Enter") run(); });
+
+    document.getElementById('go').onclick = () => run();
+    document.getElementById('q').addEventListener('keydown', e => { if(e.key==="Enter") run(); });
+
+    // Run default search on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const defaultQuery = "Are you the Keymaster?";
+      document.getElementById('q').value = defaultQuery;
+      run(defaultQuery);
+    });
   </script>
 </body>
 </html>
+
