@@ -17,31 +17,31 @@
     display:flex; flex-direction:column; position:relative; overflow-x:hidden;
   }
 
-  /* CRT overlay */
-  body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9997}
+  /* CRT look */
+  body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2}
   body::before{
     background:
       linear-gradient(rgba(0,255,153,0.06), rgba(0,255,153,0.06)) 0 0/100% 100%,
       repeating-linear-gradient(0deg, rgba(0,255,153,0.08) 0, rgba(0,255,153,0.08) 1px, transparent 2px, transparent 4px);
-    mix-blend-mode:screen; animation:scan-flicker 6s infinite linear;
+    mix-blend-mode:screen; animation:scan 6s infinite linear;
   }
   body::after{box-shadow:inset 0 0 120px rgba(0,255,153,0.12), inset 0 0 280px rgba(0,255,153,0.08)}
-  @keyframes scan-flicker{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
+  @keyframes scan{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
 
   a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
 
   .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2)}
+
   .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
   .logo{width:min(520px,80vw);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 
   /* Search */
   .search-wrap{display:flex;justify-content:center;align-items:center;gap:12px;margin:6px auto 18px;padding:0 16px;width:100%}
-  .label{font-size:14px;color:var(--fg)}
+  .label{font-size:14px}
   .field{display:flex;align-items:stretch;gap:0;border:2px solid var(--fg);background:#000}
   input[type="search"]{
-    width:min(560px,70vw);padding:12px 14px;border:0;outline:none;
-    background:#000;color:#fff;font-family:inherit;font-size:12px;
+    width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font-family:inherit;font-size:12px;
   }
   button{background:#000;color:#fff;border:0;width:42px;padding:0;cursor:pointer;border-left:2px solid var(--fg)}
   button:active{transform:translateY(1px)}
@@ -53,72 +53,16 @@
   .btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
   .btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
 
-  .results{max-width:960px;width:92vw;margin:0 auto 32px;display:grid;gap:12px}
+  .results{max-width:960px;width:92vw;margin:0 auto 32px;display:grid;gap:12px;z-index:1}
   .card{border:1px solid var(--border);padding:14px;background:#000}
   .src{color:var(--accent);font-size:10px;margin-bottom:6px}
   .titlelink{color:var(--accent);text-decoration:underline}
   .snippet{color:var(--accent);margin-top:4px}
 
-  footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
+  footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border);z-index:1}
   .small{font-size:10px}
 
-  /* highlight */
-  mark{
-    background:transparent;color:var(--accent);padding:0;
-    text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
-  }
-
-  /* ===== SIMPLE, RELIABLE SLIME (transition on top) ===== */
-  .slime-wrap{ position:fixed; inset:0; display:none; z-index:9998; }
-  .slime-wrap.show{ display:block; animation: fadein .6s ease; }
-  @keyframes fadein{ from{opacity:0} to{opacity:1} }
-
-  .slime{
-    position:absolute; left:0; right:0;
-    height:85vh;              /* how tall the ooze panel is */
-    top:-120vh;               /* start fully off-screen */
-    transition: top 2.8s cubic-bezier(.22,.61,.36,1);  /* smooth slide */
-    background:
-      radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),
-      radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),
-      radial-gradient(140px 50px at 85% 98%, rgba(255,160,190,.85) 30%, rgba(255,160,190,0) 70%),
-      linear-gradient(to bottom, rgba(255,205,220,.88), rgba(255,170,195,.78) 35%, rgba(255,120,170,.62) 85%);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    box-shadow: 0 6px 18px rgba(255,105,180,.25);
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-  }
-  /* wobble after it lands */
-  .slime.wobble{
-    animation: wobble 6s ease-in-out 3s infinite;
-  }
-  @keyframes wobble{
-    0% { transform: translateX(0) }
-    50%{ transform: translateX(6px) }
-    100%{ transform: translateX(0) }
-  }
-
-  .slime-dismiss{
-    position:absolute; top:10px; right:12px;
-    background:rgba(0,0,0,.25); color:#fff; border:1px solid #333;
-    width:28px; height:28px; line-height:24px; border-radius:50%;
-    font-family:inherit; font-size:16px; cursor:pointer;
-    text-align:center; filter: drop-shadow(0 0 6px rgba(255,192,203,.7));
-  }
-  .slime-dismiss:hover{ background:rgba(0,0,0,.4); }
-
-  /* Respect reduced motion for the fade only; slide is allowed (or we can force-animate in JS) */
-  @media (prefers-reduced-motion: reduce){
-    body:not(.force-animate) .slime-wrap.show{ animation: none; }
-  }
-
-  @media (max-width:520px){
-    .title{font-size:22px}
-    .label{display:none}
-    .btn{font-size:14px;text-underline-offset:6px}
-    .btnbar{gap:24px}
-  }
+  mark{background:transparent;color:var(--accent);padding:0;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
 </style>
 </head>
 <body>
@@ -167,8 +111,13 @@
     }
 
     async function load(){
-      const r = await fetch("index.json",{cache:"no-store"});
-      data = await r.json();
+      try{
+        const r = await fetch("index.json",{cache:"no-store"});
+        data = await r.json();
+      }catch(e){
+        console.warn("index.json missing or invalid; search will be empty.", e);
+        data = [];
+      }
       byUrl.clear();
       for(const d of data){ if(d && d.url) byUrl.set(d.url, d); }
       index = new FlexSearch.Document({
@@ -240,56 +189,106 @@
     });
   </script>
 
-  <!-- Idle Slime (dynamic + CSS transition) -->
+  <!-- Ultra-compatible Idle Slime -->
   <script>
     (function(){
       const IDLE_MS = 45000; // 45s
       let t, wrap=null, panel=null, btn=null, visible=false;
 
-      // Force-animate even if user prefers reduced motion (for this effect only)
-      document.body.classList.add('force-animate');
-
       function build(){
         if (wrap) return;
         wrap = document.createElement('div');
         wrap.className = 'slime-wrap';
-        wrap.innerHTML = `
-          <div class="slime"></div>
-          <button class="slime-dismiss" aria-label="Dismiss slime">×</button>
-        `;
+        wrap.style.position = 'fixed';
+        wrap.style.inset = '0';
+        wrap.style.display = 'none';
+        wrap.style.zIndex = '9999';
         document.body.appendChild(wrap);
-        panel = wrap.querySelector('.slime');
-        btn = wrap.querySelector('.slime-dismiss');
+
+        panel = document.createElement('div');
+        panel.className = 'slime';
+        // START STATE
+        panel.style.position = 'absolute';
+        panel.style.left = '0'; panel.style.right = '0';
+        panel.style.height = '85vh';
+        panel.style.top = '-120vh'; // fully hidden above
+        panel.style.background = 
+          'radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),' +
+          'radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),' +
+          'radial-gradient(140px 50px at 85% 98%, rgba(255,160,190,.85) 30%, rgba(255,160,190,0) 70%),' +
+          'linear-gradient(to bottom, rgba(255,205,220,.88), rgba(255,170,195,.78) 35%, rgba(255,120,170,.62) 85%)';
+        panel.style.backdropFilter = 'blur(2px)';
+        panel.style.webkitBackdropFilter = 'blur(2px)';
+        panel.style.borderBottomLeftRadius = '18px';
+        panel.style.borderBottomRightRadius = '18px';
+        panel.style.boxShadow = '0 6px 18px rgba(255,105,180,.25)';
+        wrap.appendChild(panel);
+
+        btn = document.createElement('button');
+        btn.className = 'slime-dismiss';
+        btn.setAttribute('aria-label','Dismiss slime');
+        btn.textContent = '×';
+        btn.style.position = 'absolute';
+        btn.style.top = '10px'; btn.style.right = '12px';
+        btn.style.width = '28px'; btn.style.height = '28px';
+        btn.style.lineHeight = '24px';
+        btn.style.borderRadius = '50%';
+        btn.style.border = '1px solid #333';
+        btn.style.background = 'rgba(0,0,0,.25)';
+        btn.style.color = '#fff';
+        btn.style.cursor = 'pointer';
+        wrap.appendChild(btn);
 
         btn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
         wrap.addEventListener('click', ()=>{ hide(); arm(); });
         window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); }});
       }
 
+      // rAF slide from -120vh → 0 over DURATION ms
+      function animateDown(duration=2800){
+        const startTop = -120; // vh
+        const endTop = 0;
+        let startTime = null;
+
+        function ease(t){ return t<.5 ? 2*t*t : -1+(4-2*t)*t; } // ease-in-out quad
+
+        function step(ts){
+          if(!startTime) startTime = ts;
+          const p = Math.min(1, (ts - startTime)/duration);
+          const y = startTop + (endTop - startTop) * ease(p);
+          panel.style.top = y + 'vh';
+          if (p < 1) { requestAnimationFrame(step); }
+        }
+        requestAnimationFrame(step);
+      }
+
       function show(){
         if (visible) return;
         build();
         visible = true;
-        wrap.classList.add('show');
-
-        // slide from -120vh to 0 using CSS transition
-        panel.style.top = '-120vh'; // reset start (in case it was changed before)
-        // next frame, drop to 0
-        requestAnimationFrame(()=>{ panel.style.top = '0'; panel.classList.add('wobble'); });
+        wrap.style.display = 'block';
+        // reset start position in case of prior hide
+        panel.style.top = '-120vh';
+        animateDown(2800);
       }
 
       function hide(){
         if (!visible) return;
         visible = false;
-        // slide back up quickly
-        panel.classList.remove('wobble');
-        panel.style.transition = 'top 0.6s ease';
-        panel.style.top = '-120vh';
-        setTimeout(()=>{
-          wrap.classList.remove('show');
-          // restore long transition for next time
-          panel.style.transition = 'top 2.8s cubic-bezier(.22,.61,.36,1)';
-        }, 650);
+        // quick slide up
+        const startTop = parseFloat(panel.style.top) || 0;
+        const endTop = -120;
+        const D = 600;
+        let s=null;
+        function step(ts){
+          if(!s) s=ts;
+          const p = Math.min(1,(ts-s)/D);
+          const y = startTop + (endTop-startTop)*p;
+          panel.style.top = y + 'vh';
+          if (p<1){ requestAnimationFrame(step); }
+          else { wrap.style.display = 'none'; }
+        }
+        requestAnimationFrame(step);
       }
 
       function arm(){
@@ -298,15 +297,16 @@
         t = setTimeout(show, IDLE_MS);
       }
 
-      // Reset on any activity
+      // Reset timer on activity
       ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>{
         window.addEventListener(ev, arm, {passive:true});
       });
 
-      // Debug: ?slime=1 → show immediately
+      // Debug: ?slime=1 OR press "S"
       if (new URLSearchParams(location.search).get('slime') === '1') {
         setTimeout(show, 400);
       }
+      window.addEventListener('keydown', e => { if(e.key.toLowerCase()==='s') show(); });
 
       window.addEventListener('DOMContentLoaded', arm);
     })();
