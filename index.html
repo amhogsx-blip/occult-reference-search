@@ -68,15 +68,16 @@
     text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
   }
 
-  /* ===== Slime overlay (fallback-friendly) ===== */
+  /* ===== SIMPLE, RELIABLE SLIME (transition on top) ===== */
   .slime-wrap{ position:fixed; inset:0; display:none; z-index:9998; }
-  .slime-wrap.show{ display:block; animation: slime-fade .6s ease; }
-  @keyframes slime-fade{ from{opacity:0} to{opacity:1} }
+  .slime-wrap.show{ display:block; animation: fadein .6s ease; }
+  @keyframes fadein{ from{opacity:0} to{opacity:1} }
 
   .slime{
-    position:absolute; left:0; right:0; top:-110%; height:130%;
-    transform: translateY(0);
-    /* milky/translucent pink layers (no masks needed) */
+    position:absolute; left:0; right:0;
+    height:85vh;              /* how tall the ooze panel is */
+    top:-120vh;               /* start fully off-screen */
+    transition: top 2.8s cubic-bezier(.22,.61,.36,1);  /* smooth slide */
     background:
       radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),
       radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),
@@ -88,6 +89,15 @@
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
   }
+  /* wobble after it lands */
+  .slime.wobble{
+    animation: wobble 6s ease-in-out 3s infinite;
+  }
+  @keyframes wobble{
+    0% { transform: translateX(0) }
+    50%{ transform: translateX(6px) }
+    100%{ transform: translateX(0) }
+  }
 
   .slime-dismiss{
     position:absolute; top:10px; right:12px;
@@ -98,7 +108,7 @@
   }
   .slime-dismiss:hover{ background:rgba(0,0,0,.4); }
 
-  /* Respect reduced motion by default, but we’ll force-animate via JS for this effect */
+  /* Respect reduced motion for the fade only; slide is allowed (or we can force-animate in JS) */
   @media (prefers-reduced-motion: reduce){
     body:not(.force-animate) .slime-wrap.show{ animation: none; }
   }
@@ -230,13 +240,13 @@
     });
   </script>
 
-  <!-- Idle Slime (dynamic + Web Animations API) -->
+  <!-- Idle Slime (dynamic + CSS transition) -->
   <script>
     (function(){
       const IDLE_MS = 45000; // 45s
       let t, wrap=null, panel=null, btn=null, visible=false;
 
-      // Force animation even if user prefers-reduced-motion
+      // Force-animate even if user prefers reduced motion (for this effect only)
       document.body.classList.add('force-animate');
 
       function build(){
@@ -262,24 +272,24 @@
         visible = true;
         wrap.classList.add('show');
 
-        // Web Animations API: reliable slide-down
-        panel.getAnimations().forEach(a => a.cancel());
-        panel.animate(
-          [
-            { transform: 'translateY(0)'     , offset: 0   },
-            { transform: 'translateY(1.10%)', offset: 0.65}, /* easing weight */
-            { transform: 'translateY(1.04%)', offset: 0.80},
-            { transform: 'translateY(1.08%)', offset: 1   }
-          ].map(k => ({...k, transform: k.transform.replace('%','10%')})), // ensure valid
-          { duration: 18000, easing: 'ease-in', fill: 'forwards' }
-        );
+        // slide from -120vh to 0 using CSS transition
+        panel.style.top = '-120vh'; // reset start (in case it was changed before)
+        // next frame, drop to 0
+        requestAnimationFrame(()=>{ panel.style.top = '0'; panel.classList.add('wobble'); });
       }
 
       function hide(){
         if (!visible) return;
         visible = false;
-        wrap.classList.remove('show');
-        panel.getAnimations().forEach(a => a.cancel());
+        // slide back up quickly
+        panel.classList.remove('wobble');
+        panel.style.transition = 'top 0.6s ease';
+        panel.style.top = '-120vh';
+        setTimeout(()=>{
+          wrap.classList.remove('show');
+          // restore long transition for next time
+          panel.style.transition = 'top 2.8s cubic-bezier(.22,.61,.36,1)';
+        }, 650);
       }
 
       function arm(){
@@ -295,7 +305,7 @@
 
       // Debug: ?slime=1 → show immediately
       if (new URLSearchParams(location.search).get('slime') === '1') {
-        setTimeout(show, 500);
+        setTimeout(show, 400);
       }
 
       window.addEventListener('DOMContentLoaded', arm);
