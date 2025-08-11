@@ -176,3 +176,5 @@ DOCS=list(uniq.values())
 # Write the static index for the frontend
 with open("index.json","w",encoding="utf-8") as f:
     json.dump(DOCS, f, ensure_ascii=False)
+  Write index.json to repo root
+
