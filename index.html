@@ -1,97 +1,39 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
+
+<!-- Pixel headline option; system font for body for speed -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 <style>
-  :root{ --bg:#ffffff; --fg:#111; --muted:#5a5a5a; --accent:#0a7c56; --frame:#e8e8e8; --chip:#0a7c56; }
-  *{ box-sizing:border-box } body{ margin:0; background:var(--bg); color:var(--fg); font-family:system-ui, -apple-system, Segoe UI, Roboto, "Press Start 2P", sans-serif }
-  a{ color:inherit; text-decoration:none } a:hover{ text-decoration:underline }
-  .wrap{ max-width:960px; margin:0 auto; padding:24px }
-  header{ padding:22px 0 8px; border-bottom:1px solid var(--frame); text-align:center }
-  .site-title{ font-size:clamp(24px,4.2vw,40px); letter-spacing:1px; font-weight:700; }
-  .site-title .spaced{ letter-spacing:.25em }
-  nav{ margin:8px 0 6px; font-size:15px; color:#2d2d2d } nav a{ margin:0 10px }
-  .tagline{ color:var(--muted); font-size:14px; margin:8px 0 0 }
-  .panel{ margin:26px auto 24px; border:1px solid var(--frame); background:#fafafa; border-radius:10px; padding:16px 16px 20px; }
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-  input[type="search"]{ flex:1; min-width:260px; background:#fff; border:1.5px solid #cfcfcf; border-radius:8px; padding:12px 12px; font-size:14px }
-  button{ background:var(--chip); color:#fff; border:0; border-radius:10px; padding:12px 16px; font-weight:600; cursor:pointer }
-  button:active{ transform:translateY(1px) }
-  .results{ margin-top:16px; display:grid; gap:12px }
-  .card{ border:1px solid var(--frame); border-radius:10px; padding:12px 14px; background:#fff }
-  .src{ color:#2e6c55; font-size:12px; margin-bottom:4px }
-  footer{ border-top:1px solid var(--frame); margin-top:26px; padding:18px 0; text-align:center; color:var(--muted); font-size:13px }
-  .pixel{ font-family:"Press Start 2P", monospace; font-size:12px; color:#2e6c55; display:block; margin-top:4px }
-  @media (max-width:560px){ nav{ font-size:14px } .panel{ padding:12px } }
-</style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="site-title">
-        <span class="spaced">T he</span> <strong>Occult Reference Net</strong>
-        <span class="pixel">T.O.R.N.</span>
-      </div>
-      <nav>
-        <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">About</a> ·
-        <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Contact</a> ·
-        <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Sponsors</a> ·
-        <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Forum</a>
-      </nav>
-      <div class="tagline">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989</div>
-    </header>
-
-    <main>
-      <section class="panel">
-        <div class="row">
-          <input id="q" type="search" placeholder="Search grimoires, witch trials, alchemy, ESP…">
-          <button id="go">Search</button>
-        </div>
-        <div id="results" class="results"></div>
-      </section>
-    </main>
-
-    <footer>
-      Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.
-    </footer>
-  </div>
-
-  <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
-  <script>
-  let data=[], index;
-  async function load(){
-    const r=await fetch("index.json",{cache:"no-store"});
-    data=await r.json();
-    index = new FlexSearch.Document({
-      document: { id: "id", index: ["title","snippet","author","tags"] },
-      tokenize:"forward"
-    });
-    for(const d of data) index.add(d);
+  :root{
+    --bg:#ffffff; --fg:#111; --muted:#5a5a5a; --accent:#0a7c56; --border:#e7e7e7;
+    --nav:#2d2d2d; --hero:#f6faf8; --chip:#0a7c56;
   }
-  async function run(){
-    const q=document.getElementById('q').value.trim();
-    if(!index) await load();
-    const box=document.getElementById('results');
-    if(!q){ box.innerHTML="<div class='card'>Type a query, then press Search.</div>"; return; }
-    const results = index.search(q, { enrich:true });
-    const ids = [...new Set(results.flatMap(r => r.result))];
-    const hits = ids.map(id => data.find(d => d.id===id)).filter(Boolean).slice(0,50);
-    box.innerHTML="";
-    if(!hits.length){ box.innerHTML="<div class='card'>No results. Try broader terms.</div>"; return; }
-    for(const h of hits){
-      const el=document.createElement('div'); el.className="card";
-      el.innerHTML = `
-        <div class="src">${h.collection||h.source} · ${h.type||"page"}</div>
-        <a href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
-        <div>${h.snippet||""}</div>
-        <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
-      box.appendChild(el);
-    }
-  }
-  document.getElementById('go').onclick=run;
-  document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==="Enter") run(); });
-  </script>
-</body>
-</html>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:inherit;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Top utility bar (optional) */
+  .topbar{background:#fff;border-bottom:1px solid var(--border)}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:13px;color:var(--muted)}
+  .social a{margin-left:12px}
+
+  /* Header with logo/title + nav */
+  header{background:#fff;border-bottom:1px solid var(--border)}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  .header-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:56px;height:56px;background:#eaeaea;border-radius:8px;display:inline-block}
+  .site-title{line-height:1.1}
+  .site-title h1{margin:0;font-size:clamp(22px,4vw,36px);font-weight:800;letter-spacing:.2px}
+  .site-title .sub{font-family:"Press Start 2P",monospace;font-size:11px;color:var(--accent);margin-top:2px}
+
+  nav .menu{display:flex;gap:18px;font-size:15px;color:var(--nav);flex-wrap:wrap}
+  nav .menu a{padding:6px 4px;border-radius:6px}
+  nav .menu a:hover{background:#f3f3f3;text-decora
+
