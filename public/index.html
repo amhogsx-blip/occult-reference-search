@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Occult Reference Net</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0c0f10; --fg:#c8f7c5; --dim:#7adf76; --accent:#00ff9c }
+  *{ box-sizing:border-box }
+  body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Press Start 2P", monospace }
+  header{ padding:24px; text-align:center; text-shadow:0 0 6px var(--accent) }
+  .crt::after{ content:""; position:fixed; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay; opacity:.12; }
+  .shell{ max-width:900px; margin:0 auto; padding:16px }
+  .panel{ border:3px solid var(--dim); padding:12px; background:#051; box-shadow:0 0 12px #0f4; border-radius:4px }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center }
+  input[type="search"], select, input[type="number"]{ background:#031; border:3px solid var(--dim); color:var(--fg); padding:12px; font-size:12px }
+  button{ background:#031; color:var(--fg); border:3px solid var(--accent); padding:12px 16px; cursor:pointer }
+  .results{ margin-top:18px; display:grid; gap:12px }
+  .card{ border:2px solid var(--dim); padding:12px; background:#041 }
+  .src{ color:var(--accent); font-size:11px }
+  a{ color:var(--fg); text-decoration:underline }
+  .blink{ animation:blink 1s steps(2,start) infinite } @keyframes blink{ to{visibility:hidden} }
+</style>
+</head>
+<body class="crt">
+<header><h1>THE OCCULT REFERENCE NET <span class="blink">_</span></h1></header>
+<main class="shell">
+<section class="panel">
+  <div class="row">
+    <input id="q" type="search" placeholder="grimoires, witch trials, alchemy…">
+    <select id="source"><option value="">All sources</option>
+      <option>embassyofthefreemind.com</option>
+      <option>occultlibrary.org</option>
+      <option>digitaloccultlibrary.commons.gc.cuny.edu</option>
+      <option>rmc.library.cornell.edu</option>
+    </select>
+    <input id="year" type="number" placeholder="Year ≥" min="1400" max="2099" style="width:120px">
+    <button id="go">SEARCH</button>
+  </div>
+  <div id="results" class="results"></div>
+</section>
+</main>
+<script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
+<script>
+let data=[], index;
+async function load(){
+  const r=await fetch("index.json", {cache:"no-store"});
+  data=await r.json();
+  index = new FlexSearch.Document({
+    document: { id: "id", index: ["title","snippet","author","tags"] },
+    tokenize:"forward",
+  });
+  for(const d of data) index.add(d);
+}
+function filterDocs(ids, src, y){
+  let out = ids.map(id => data.find(d => d.id===id)).filter(Boolean);
+  if(src) out = out.filter(d => d.source===src);
+  if(y) out = out.filter(d => (d.year||0) >= y);
+  return out.slice(0,50);
+}
+async function run(){
+  const q=document.getElementById('q').value.trim();
+  const src=document.getElementById('source').value;
+  const y=parseInt(document.getElementById('year').value||0,10);
+  if(!index) await load();
+  const box=document.getElementById('results');
+  if(!q){ box.innerHTML="<div class='card'>Type a query, then hit SEARCH.</div>"; return; }
+  const results = index.search(q, { enrich:true });
+  const ids = [...new Set(results.flatMap(r => r.result))];
+  const hits = filterDocs(ids, src, y);
+  box.innerHTML="";
+  if(!hits.length){ box.innerHTML="<div class='card'>No results. Try broader terms.</div>"; return; }
+  for(const h of hits){
+    const el=document.createElement('div'); el.className="card";
+    el.innerHTML = `
+      <div class="src">${h.collection||h.source} · ${h.type||"page"}</div>
+      <a href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
+      <div>${h.snippet||""}</div>
+      <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
+    box.appendChild(el);
+  }
+}
+document.getElementById('go').onclick=run;
+document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==="Enter") run(); });
+</script>
+</body></html>
