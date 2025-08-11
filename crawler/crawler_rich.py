@@ -174,7 +174,5 @@ for d in DOCS:
 DOCS=list(uniq.values())
 
 # Write the static index for the frontend
-with open("public/index.json","w",encoding="utf-8") as f:
+with open("index.json","w",encoding="utf-8") as f:
     json.dump(DOCS, f, ensure_ascii=False)
-
-print("Wrote", len(DOCS), "docs to public/index.json")
