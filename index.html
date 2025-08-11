@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
+
+<!-- Font + shared cursor CSS -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"><!-- retro 1993 cursor -->
+<link rel="stylesheet" href="style.css">
 
 <style>
   :root{ --bg:#000; --fg:#fff; --muted:#bbb; --accent:#00ff99; --border:#333; }
@@ -17,7 +19,7 @@
   }
 
   /* CRT overlay */
-  body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999}
+  body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9997}
   body::before{
     background:
       linear-gradient(rgba(0,255,153,0.06), rgba(0,255,153,0.06)) 0 0/100% 100%,
@@ -48,7 +50,7 @@
   .mag{display:inline-block;width:100%;height:100%;font-size:16px}
   .mag::before{content:"\1F50D";display:block;line-height:42px;text-align:center}
 
-  /* Bottom nav (includes Home for consistency) */
+  /* Bottom nav */
   .btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;padding:0 16px;flex-wrap:wrap}
   .btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
   .btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
@@ -66,6 +68,95 @@
   mark{
     background:transparent;color:var(--accent);padding:0;
     text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
+  }
+
+  /* ===== Idle Slime Overlay — DRIPPY VERSION ===== */
+  .slime-wrap{
+    position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .6s ease;
+    z-index:9998; /* below custom cursor (which should be >9998) */
+  }
+  body.slimed .slime-wrap{ opacity:1; pointer-events:auto; }
+
+  .slime{
+    position:absolute; left:0; right:0; top:-110%; height:130%;
+
+    /* milky/translucent pink layers */
+    background:
+      radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),
+      radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),
+      radial-gradient(140px 50px at 85% 98%, rgba(255,160,190,.85) 30%, rgba(255,160,190,0) 70%),
+      linear-gradient(to bottom, rgba(255,205,220,.88), rgba(255,170,195,.78) 35%, rgba(255,120,170,.62) 85%);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 6px 18px rgba(255,105,180,.25);
+
+    /* Drip edge mask */
+    -webkit-mask-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'>\
+  <defs>\
+    <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>\
+      <stop offset='0%' stop-color='white'/>\
+      <stop offset='70%' stop-color='white'/>\
+      <stop offset='100%' stop-color='black'/>\
+    </linearGradient>\
+  </defs>\
+  <rect x='0' y='0' width='1200' height='600' fill='url(#g)'/>\
+  <g fill='black'>\
+    <path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/>\
+  </g>\
+</svg>");
+    mask-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'>\
+  <defs>\
+    <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>\
+      <stop offset='0%' stop-color='white'/>\
+      <stop offset='70%' stop-color='white'/>\
+      <stop offset='100%' stop-color='black'/>\
+    </linearGradient>\
+  </defs>\
+  <rect x='0' y='0' width='1200' height='600' fill='url(#g)'/>\
+  <g fill='black'>\
+    <path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/>\
+  </g>\
+</svg>");
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: top center; mask-position: top center;
+
+    /* Animations */
+    animation:
+      slime-ooze 18s ease-in forwards,
+      slime-wobble 6s ease-in-out infinite,
+      slime-shimmer 6s ease-in-out infinite;
+  }
+
+  .slime-dismiss{
+    position:absolute; top:10px; right:12px;
+    background:rgba(0,0,0,.25); color:#fff; border:1px solid #333;
+    width:28px; height:28px; line-height:24px; border-radius:50%;
+    font-family:inherit; font-size:16px; cursor:pointer;
+    text-align:center; filter: drop-shadow(0 0 6px rgba(255,192,203,.7));
+  }
+  .slime-dismiss:hover{ background:rgba(0,0,0,.4); }
+
+  @keyframes slime-ooze{
+    0%   { transform: translateY(0); }
+    65%  { transform: translateY(110%); }
+    80%  { transform: translateY(104%); }
+    100% { transform: translateY(108%); }
+  }
+  @keyframes slime-wobble{
+    0%   { transform: translateY(108%) translateX(0px); }
+    50%  { transform: translateY(108%) translateX(6px); }
+    100% { transform: translateY(108%) translateX(0px); }
+  }
+  @keyframes slime-shimmer{
+    0%   { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
+    50%  { filter: drop-shadow(0 0 18px rgba(255,160,190,.45)); }
+    100% { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slime{ animation: none; top:0; }
+    .slime-wrap{ transition: none; }
   }
 
   @media (max-width:520px){
@@ -106,14 +197,21 @@
     <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
   </footer>
 
+  <!-- Slime overlay (hidden until idle) -->
+  <div class="slime-wrap" id="slimeWrap" aria-hidden="true">
+    <div class="slime" id="slime"></div>
+    <button class="slime-dismiss" id="slimeDismiss" aria-label="Dismiss slime">×</button>
+  </div>
+
+  <!-- Search -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
     let data = [], index, byUrl = new Map();
 
-    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'); }
     function highlight(text, query){
       if(!text || !query) return text || "";
-      const terms = [...new Set(query.trim().split(/\s+/).filter(Boolean))];
+      const terms = [...new Set(query.trim().split(/\\s+/).filter(Boolean))];
       if(!terms.length) return text;
       const re = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
       return text.replace(re, "<mark>$1</mark>");
@@ -192,6 +290,33 @@
       run(defaultQuery);
     });
   </script>
+
+  <!-- Idle Slime Controller -->
+  <script>
+    (function(){
+      const IDLE_MS = 45000; // 45s
+      const wrap = document.getElementById('slimeWrap');
+      const btn  = document.getElementById('slimeDismiss');
+      let t, slimed = false;
+
+      function showSlime(){ if(!slimed){ slimed=true; document.body.classList.add('slimed'); wrap.setAttribute('aria-hidden','false'); } }
+      function hideSlime(){ slimed=false; document.body.classList.remove('slimed'); wrap.setAttribute('aria-hidden','true'); }
+      function arm(){ clearTimeout(t); if(slimed) hideSlime(); t = setTimeout(showSlime, IDLE_MS); }
+
+      ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>{
+        window.addEventListener(ev, arm, {passive:true});
+      });
+
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); hideSlime(); arm(); });
+      wrap.addEventListener('click', ()=>{ hideSlime(); arm(); });
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hideSlime(); arm(); }});
+
+      window.addEventListener('DOMContentLoaded', arm);
+    })();
+  </script>
+
+  <!-- Optional: animated CRT cursor (if you're using cursor.js) -->
   <script src="cursor.js" defer></script>
 </body>
 </html>
+
