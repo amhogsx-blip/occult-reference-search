@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Retro pixel font -->
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- Retro pixel font for site + Player 2 for buttons -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Player+2&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -22,10 +22,8 @@
   /* === CRT overlay (scanlines + gentle flicker) ========================== */
   body::before,
   body::after{
-    content:"";
-    position:fixed; inset:0; pointer-events:none; z-index:9999;
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:9999;
   }
-  /* Scanlines */
   body::before{
     background:
       linear-gradient(rgba(0,255,153,0.06), rgba(0,255,153,0.06)) 0 0/100% 100%,
@@ -37,7 +35,6 @@
     mix-blend-mode:screen;
     animation:scan-flicker 6s infinite linear;
   }
-  /* Soft vignette/glow */
   body::after{
     box-shadow:
       inset 0 0 120px rgba(0,255,153,0.12),
@@ -72,7 +69,7 @@
   /* Search row centered */
   .search-wrap{
     display:flex; justify-content:center; align-items:center; gap:12px;
-    margin:6px auto 24px; padding:0 16px; width:100%;
+    margin:6px auto 12px; padding:0 16px; width:100%;
   }
   .label{font-size:14px; color:var(--fg)}
   .field{
@@ -90,6 +87,28 @@
   button:active{transform:translateY(1px)}
   .mag{display:inline-block; width:100%; height:100%; font-size:16px}
   .mag::before{content:"\1F50D"; display:block; line-height:42px; text-align:center}
+
+  /* NEW: Player 2 button bar */
+  .btnbar{
+    display:flex; justify-content:center; gap:12px;
+    margin:8px auto 24px; padding:0 16px; flex-wrap:wrap;
+  }
+  .btn{
+    font-family:"Player 2", system-ui, sans-serif; /* only buttons use Player 2 */
+    letter-spacing:.5px;
+    background:#000; color:var(--accent);
+    border:2px solid var(--accent);
+    padding:10px 18px; border-radius:6px; cursor:pointer;
+    text-decoration:none; display:inline-block; font-size:14px;
+    transition:transform .05s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+    box-shadow:0 0 0 rgba(0,255,153,0);
+  }
+  .btn:hover{
+    background:var(--accent); color:#000; text-decoration:none;
+    box-shadow:0 0 18px rgba(0,255,153,.45);
+    transform:translateY(-1px);
+  }
+  .btn:active{ transform:translateY(1px) }
 
   /* Results area */
   .results{
@@ -125,6 +144,14 @@
       <input id="q" type="search" placeholder="TYPE SEARCH TERMS…">
       <button id="go" aria-label="Search"><span class="mag" aria-hidden="true"></span></button>
     </div>
+  </div>
+
+  <!-- NEW Button bar (Player 2 font) -->
+  <div class="btnbar" role="navigation" aria-label="Secondary">
+    <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">About</a>
+    <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Contact</a>
+    <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Sponsors</a>
+    <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Forum</a>
   </div>
 
   <div id="results" class="results"></div>
@@ -180,3 +207,4 @@
   </script>
 </body>
 </html>
+
