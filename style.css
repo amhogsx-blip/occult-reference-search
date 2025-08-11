@@ -1,0 +1,11 @@
+/* ===== Retro 1993 cursor pack ===== */
+/* Default page cursor = pixel arrow */
+html, body {
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR4nKXT2woAEBAE0LH5/1/mhRJ7mV1eSOY0CQAY+Biy5jIix3pUIFH2UogGpBAL2EgIeQDVhgFchAU28kAZQG3TnYON0c4GVMACtDD1FuQKp1tEl1j+ZHRwAsArEBTVfekuAAAAAElFTkSuQmCC") 1 1, auto;
+}
+/* Links & buttons = pixel “hand” */
+a, button, .btn, .titlelink {
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAANUlEQVR4nGNgGCrgPxRjAEYiNOLVx0Smi+BgmBuAKwApdgFKzNHMC0Q5n6YuoNgAQkmcegAANT4FFhsECrQAAAAASUVORK5CYII=") 7 1, pointer;
+}
+/* Inputs keep proper I-beam/text cursor */
+input, textarea { cursor: text; }
