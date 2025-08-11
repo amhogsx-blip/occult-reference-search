@@ -35,5 +35,139 @@
 
   nav .menu{display:flex;gap:18px;font-size:15px;color:var(--nav);flex-wrap:wrap}
   nav .menu a{padding:6px 4px;border-radius:6px}
-  nav .menu a:hover{background:#f3f3f3;text-decora
+  nav .menu a:hover{background:#f3f3f3;text-decoration:none}
+
+  /* Hero band */
+  .hero{background:var(--hero);border-bottom:1px solid var(--border)}
+  .hero .wrap{padding:26px 20px}
+  .tagline{color:var(--muted);font-size:15px;margin:6px 0 0}
+  .search-card{margin:18px 0 6px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  .search-row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type="search"]{flex:1;min-width:260px;background:#fff;border:1.5px solid #cfcfcf;border-radius:10px;padding:12px 14px;font-size:15px}
+  button{background:var(--chip);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer}
+  button:active{transform:translateY(1px)}
+
+  /* Results list */
+  .content .wrap{padding:20px}
+  .results{display:grid;gap:12px}
+  .card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
+  .src{color:#2e6c55;font-size:12px;margin-bottom:4px}
+
+  /* Footer */
+  footer{border-top:1px solid var(--border);margin-top:24px;background:#fff}
+  footer .wrap{padding:18px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* Mobile nav stacking */
+  @media (max-width:720px){
+    .header-row{flex-direction:column;align-items:flex-start;gap:10px}
+    nav .menu{gap:12px}
+  }
+</style>
+</head>
+<body>
+
+  <!-- (Optional) topbar -->
+  <div class="topbar">
+    <div class="wrap">
+      <div>Welcome to T.O.R.N.</div>
+      <div class="social">
+        <!-- replace with your links or remove -->
+        <a href="#" aria-label="X">X</a>
+        <a href="#" aria-label="Instagram">Instagram</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header: brand + nav -->
+  <header>
+    <div class="wrap">
+      <div class="header-row">
+        <div class="brand">
+          <!-- Replace this placeholder with your logo image: <img src="logo.png" alt="T.O.R.N." class="logo"> -->
+          <span class="logo" aria-hidden="true"></span>
+          <div class="site-title">
+            <h1>The Occult Reference Net</h1>
+            <div class="sub">T.O.R.N.</div>
+          </div>
+        </div>
+        <nav>
+          <div class="menu">
+            <!-- Point these to your real pages (Google Site or elsewhere) -->
+            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">About</a>
+            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Contact</a>
+            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Sponsors</a>
+            <a href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Forum</a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero band with single search -->
+  <section class="hero">
+    <div class="wrap">
+      <div style="font-weight:700;font-size:18px">Search the Occult Reference Net</div>
+      <div class="tagline">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989</div>
+
+      <div class="search-card">
+        <div class="search-row">
+          <input id="q" type="search" placeholder="Search grimoires, witch trials, alchemy, ESP…">
+          <button id="go">Search</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results area -->
+  <main class="content">
+    <div class="wrap">
+      <div id="results" class="results"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.
+    </div>
+  </footer>
+
+  <!-- Client-side search (FlexSearch) -->
+  <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
+  <script>
+    let data=[], index;
+    async function load(){
+      const r=await fetch("index.json",{cache:"no-store"});
+      data=await r.json();
+      index = new FlexSearch.Document({
+        document: { id: "id", index: ["title","snippet","author","tags"] },
+        tokenize:"forward"
+      });
+      for(const d of data) index.add(d);
+    }
+    async function run(){
+      const q=document.getElementById('q').value.trim();
+      const box=document.getElementById('results');
+      if(!index) await load();
+      if(!q){ box.innerHTML="<div class='card'>Type a query, then press Search.</div>"; return; }
+      const results = index.search(q,{enrich:true});
+      const ids = [...new Set(results.flatMap(r => r.result))];
+      const hits = ids.map(id => data.find(d => d.id===id)).filter(Boolean).slice(0,50);
+      box.innerHTML="";
+      if(!hits.length){ box.innerHTML="<div class='card'>No results. Try broader terms.</div>"; return; }
+      for(const h of hits){
+        const el=document.createElement('div'); el.className="card";
+        el.innerHTML = `
+          <div class="src">${h.collection||h.source} · ${h.type||"page"}</div>
+          <a href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
+          <div>${h.snippet||""}</div>
+          <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
+        box.appendChild(el);
+      }
+    }
+    document.getElementById('go').onclick=run;
+    document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==="Enter") run(); });
+  </script>
+</body>
+</html>
+
 
