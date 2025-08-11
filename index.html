@@ -4,7 +4,6 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Font + shared cursor CSS -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
@@ -33,7 +32,6 @@
   a:hover{text-decoration:underline}
 
   .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2)}
-
   .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
   .logo{width:min(520px,80vw);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 
@@ -70,7 +68,7 @@
     text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
   }
 
-  /* ===== Idle Slime styles (injected at runtime) ===== */
+  /* ===== Slime overlay (fallback-friendly) ===== */
   .slime-wrap{ position:fixed; inset:0; display:none; z-index:9998; }
   .slime-wrap.show{ display:block; animation: slime-fade .6s ease; }
   @keyframes slime-fade{ from{opacity:0} to{opacity:1} }
@@ -78,8 +76,7 @@
   .slime{
     position:absolute; left:0; right:0; top:-110%; height:130%;
     transform: translateY(0);
-
-    /* milky/translucent pink layers */
+    /* milky/translucent pink layers (no masks needed) */
     background:
       radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),
       radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),
@@ -88,21 +85,8 @@
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     box-shadow: 0 6px 18px rgba(255,105,180,.25);
-
-    /* Drip edge mask */
-    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='white'/><stop offset='70%' stop-color='white'/><stop offset='100%' stop-color='black'/></linearGradient></defs><rect x='0' y='0' width='1200' height='600' fill='url(#g)'/><g fill='black'><path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/></g></svg>");
-    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='none'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='white'/><stop offset='70%' stop-color='white'/><stop offset='100%' stop-color='black'/></linearGradient></defs><rect x='0' y='0' width='1200' height='600' fill='url(#g)'/><g fill='black'><path d='M100 560 q20 20 40 0 t40 0 t40 0 q20 -60 0 -120 q-18 -48 -10 -100 q40 40 70 120 q16 40 60 80 q12 10 30 -5 q-20 -120 40 -200 q40 40 44 104 q2 28 -2 76 q30 8 56 -16 q-8 -60 8 -120 q14 -52 44 -88 q46 46 58 90 q10 36 10 80 q30 6 52 -14 q-8 -64 10 -120 q18 -56 54 -94 q30 30 46 64 q18 38 18 78 q0 40 -10 86 q20 8 40 -10 q-6 -60 10 -110 q10 -32 30 -60 q38 38 52 78 q18 52 18 92 q0 36 -8 72 q52 10 96 -18 v42 H100 Z'/></g></svg>");
-    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-position: top center; mask-position: top center;
-  }
-
-  /* When we add .animate after insertion, run the drop + wobble + glow */
-  .slime.animate{
-    animation:
-      slime-ooze 18s ease-in forwards,
-      slime-wobble 6s ease-in-out infinite,
-      slime-shimmer 6s ease-in-out infinite;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
   }
 
   .slime-dismiss{
@@ -114,26 +98,8 @@
   }
   .slime-dismiss:hover{ background:rgba(0,0,0,.4); }
 
-  @keyframes slime-ooze{
-    0%   { transform: translateY(0); }
-    65%  { transform: translateY(110%); }
-    80%  { transform: translateY(104%); }
-    100% { transform: translateY(108%); }
-  }
-  @keyframes slime-wobble{
-    0%   { transform: translateY(108%) translateX(0px); }
-    50%  { transform: translateY(108%) translateX(6px); }
-    100% { transform: translateY(108%) translateX(0px); }
-  }
-  @keyframes slime-shimmer{
-    0%   { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
-    50%  { filter: drop-shadow(0 0 18px rgba(255,160,190,.45)); }
-    100% { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
-  }
-
-  /* Respect reduced motion by default, but allow JS to force animation via .force-animate */
+  /* Respect reduced motion by default, but we’ll force-animate via JS for this effect */
   @media (prefers-reduced-motion: reduce){
-    body:not(.force-animate) .slime.animate{ animation: none; top:0; }
     body:not(.force-animate) .slime-wrap.show{ animation: none; }
   }
 
@@ -180,10 +146,7 @@
   <script>
     let data = [], index, byUrl = new Map();
 
-    // Correct regex (prevents script crash)
-    function escapeRegExp(s){
-      return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
     function highlight(text, query){
       if(!text || !query) return text || "";
@@ -267,11 +230,11 @@
     });
   </script>
 
-  <!-- Idle Slime (dynamic; force-animate override for Reduce Motion) -->
+  <!-- Idle Slime (dynamic + Web Animations API) -->
   <script>
     (function(){
       const IDLE_MS = 45000; // 45s
-      let t, slimed = false, wrap=null, panel=null, btn=null;
+      let t, wrap=null, panel=null, btn=null, visible=false;
 
       // Force animation even if user prefers-reduced-motion
       document.body.classList.add('force-animate');
@@ -288,36 +251,41 @@
         panel = wrap.querySelector('.slime');
         btn = wrap.querySelector('.slime-dismiss');
 
-        // Dismiss handlers
-        btn.addEventListener('click', (e)=>{ e.stopPropagation(); hideSlime(); arm(); });
-        wrap.addEventListener('click', ()=>{ hideSlime(); arm(); });
-        window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hideSlime(); arm(); }});
+        btn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
+        wrap.addEventListener('click', ()=>{ hide(); arm(); });
+        window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); }});
       }
 
-      function showSlime(){
-        if (slimed) return;
+      function show(){
+        if (visible) return;
         build();
-        slimed = true;
+        visible = true;
         wrap.classList.add('show');
 
-        // restart animation cleanly
-        panel.classList.remove('animate');
-        requestAnimationFrame(()=>{ panel.classList.add('animate'); });
+        // Web Animations API: reliable slide-down
+        panel.getAnimations().forEach(a => a.cancel());
+        panel.animate(
+          [
+            { transform: 'translateY(0)'     , offset: 0   },
+            { transform: 'translateY(1.10%)', offset: 0.65}, /* easing weight */
+            { transform: 'translateY(1.04%)', offset: 0.80},
+            { transform: 'translateY(1.08%)', offset: 1   }
+          ].map(k => ({...k, transform: k.transform.replace('%','10%')})), // ensure valid
+          { duration: 18000, easing: 'ease-in', fill: 'forwards' }
+        );
       }
 
-      function hideSlime(){
-        if (!slimed) return;
-        slimed = false;
-        if (wrap){
-          wrap.classList.remove('show');
-          panel.classList.remove('animate');
-        }
+      function hide(){
+        if (!visible) return;
+        visible = false;
+        wrap.classList.remove('show');
+        panel.getAnimations().forEach(a => a.cancel());
       }
 
       function arm(){
         clearTimeout(t);
-        if (slimed) hideSlime();
-        t = setTimeout(showSlime, IDLE_MS);
+        if (visible) hide();
+        t = setTimeout(show, IDLE_MS);
       }
 
       // Reset on any activity
@@ -327,14 +295,14 @@
 
       // Debug: ?slime=1 → show immediately
       if (new URLSearchParams(location.search).get('slime') === '1') {
-        setTimeout(showSlime, 600);
+        setTimeout(show, 500);
       }
 
       window.addEventListener('DOMContentLoaded', arm);
     })();
   </script>
 
-  <!-- Optional: animated CRT cursor (only if you added cursor.js) -->
+  <!-- Optional: animated CRT cursor -->
   <script src="cursor.js" defer></script>
 </body>
 </html>
