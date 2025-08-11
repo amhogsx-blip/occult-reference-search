@@ -1,15 +1,62 @@
 <!doctype html>
 <html lang="en">
-<head>…(same head and style as above)…</head>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sponsors - The Occult Reference Net</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--fg:#fff;--muted:#bbb;--accent:#00ff99;--border:#333;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:"Press Start 2P",monospace;font-size:12px;line-height:1.45}
+body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999}
+body::before{background:linear-gradient(rgba(0,255,153,.06), rgba(0,255,153,.06)) 0 0/100% 100%,repeating-linear-gradient(0deg,rgba(0,255,153,.08) 0,rgba(0,255,153,.08) 1px,transparent 2px,transparent 4px);mix-blend-mode:screen;animation:scan-flicker 6s infinite linear}
+body::after{box-shadow:inset 0 0 120px rgba(0,255,153,.12),inset 0 0 280px rgba(0,255,153,.08)}
+@keyframes scan-flicker{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.title{text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2);margin:28px 0 12px}
+.btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;flex-wrap:wrap}
+.btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
+.btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
+.content{max-width:960px;width:92vw;margin:0 auto 32px}
+.block{border:1px solid var(--border);padding:16px;margin-top:12px}
+ul{margin:10px 0 0 18px;padding:0} li{margin:6px 0}
+footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
+.small{font-size:10px}
+</style>
+</head>
 <body>
 <div class="title">Sponsors</div>
-<div class="logo-wrap">
-  <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
-</div>
-<nav class="btnbar">…same nav…</nav>
+
+<nav class="btnbar" aria-label="Quick links">
+  <a class="btn" href="index.html">Home</a>
+  <a class="btn" href="about.html">About</a>
+  <a class="btn" href="contact.html">Contact</a>
+  <a class="btn" href="sponsors.html">Sponsors</a>
+  <a class="btn" href="forum.html">Forum</a>
+</nav>
+
 <div class="content">
-We thank our sponsors — both earthly and otherwise — for keeping our ectoplasmic servers humming.
+  <div class="block">
+    <strong>Tiers</strong>
+    <ul>
+      <li><strong>Class III Apparition</strong> — $5/mo · Name listed on sponsors roll</li>
+      <li><strong>Class IV Phantom</strong> — $15/mo · Roll listing + early access updates</li>
+      <li><strong>Class V Full Roaming Vapor</strong> — $50/mo · Above + quarterly shout-out</li>
+    </ul>
+    Become a sponsor: <a href="#">Add your link here</a>
+  </div>
+
+  <div class="block">
+    <strong>Current Supporters</strong>
+    <ul>
+      <li>Spengler Foundation</li>
+      <li>Shandor Research Trust</li>
+      <li>Friends of Tobin’s Spirit Guide</li>
+    </ul>
+  </div>
 </div>
-<footer>…same footer…</footer>
+
+<footer>
+  <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
+</footer>
 </body>
 </html>
