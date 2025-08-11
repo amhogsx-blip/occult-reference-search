@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Retro pixel font for site + Player 2 for buttons -->
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Player+2&display=swap" rel="stylesheet">
+<!-- Retro pixel font -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -19,113 +19,68 @@
     display:flex; flex-direction:column; position:relative; overflow-x:hidden;
   }
 
-  /* === CRT overlay (scanlines + gentle flicker) ========================== */
-  body::before,
-  body::after{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:9999;
-  }
+  /* CRT overlay */
+  body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999}
   body::before{
     background:
       linear-gradient(rgba(0,255,153,0.06), rgba(0,255,153,0.06)) 0 0/100% 100%,
-      repeating-linear-gradient(0deg,
-        rgba(0,255,153,0.08) 0px,
-        rgba(0,255,153,0.08) 1px,
-        rgba(0,0,0,0)        2px,
-        rgba(0,0,0,0)        4px);
-    mix-blend-mode:screen;
-    animation:scan-flicker 6s infinite linear;
+      repeating-linear-gradient(0deg, rgba(0,255,153,0.08) 0, rgba(0,255,153,0.08) 1px, transparent 2px, transparent 4px);
+    mix-blend-mode:screen; animation:scan-flicker 6s infinite linear;
   }
-  body::after{
-    box-shadow:
-      inset 0 0 120px rgba(0,255,153,0.12),
-      inset 0 0 280px rgba(0,255,153,0.08);
-  }
-  @keyframes scan-flicker{
-    0%   { opacity:.22 }
-    45%  { opacity:.28 }
-    50%  { opacity:.20 }
-    55%  { opacity:.28 }
-    100% { opacity:.22 }
-  }
-  /* ====================================================================== */
+  body::after{box-shadow:inset 0 0 120px rgba(0,255,153,0.12), inset 0 0 280px rgba(0,255,153,0.08)}
+  @keyframes scan-flicker{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
 
   a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
 
-  /* Header title */
-  .title{
-    margin:28px 12px 10px; text-align:center;
-    font-size:clamp(22px,5vw,46px); letter-spacing:2px;
-    text-shadow:0 0 8px rgba(0,255,153,.2);
-  }
+  .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2)}
 
-  /* Centered logo */
-  .logo-wrap{display:flex; justify-content:center; margin:10px 0 18px}
-  .logo{
-    width:min(520px,80vw); height:auto; image-rendering:pixelated; image-rendering:crisp-edges;
-    filter: drop-shadow(0 0 18px rgba(0,0,0,.6));
-  }
+  .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
+  .logo{width:min(520px,80vw);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 
-  /* Search row centered */
-  .search-wrap{
-    display:flex; justify-content:center; align-items:center; gap:12px;
-    margin:6px auto 12px; padding:0 16px; width:100%;
-  }
-  .label{font-size:14px; color:var(--fg)}
-  .field{
-    display:flex; align-items:stretch; gap:0;
-    border:2px solid var(--fg); background:#111;
-  }
-  input[type="search"]{
-    width:min(560px,70vw); padding:12px 14px; border:0; outline:none;
-    background:#fff; color:#000; font-family:inherit; font-size:12px;
-  }
-  button{
-    background:#222; color:#fff; border:0; width:42px; padding:0 0; cursor:pointer;
-    border-left:2px solid var(--fg);
-  }
+  .search-wrap{display:flex;justify-content:center;align-items:center;gap:12px;margin:6px auto 18px;padding:0 16px;width:100%}
+  .label{font-size:14px;color:var(--fg)}
+  .field{display:flex;align-items:stretch;gap:0;border:2px solid var(--fg);background:#111}
+  input[type="search"]{width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#fff;color:#000;font-family:inherit;font-size:12px}
+  button{background:#222;color:#fff;border:0;width:42px;padding:0;cursor:pointer;border-left:2px solid var(--fg)}
   button:active{transform:translateY(1px)}
-  .mag{display:inline-block; width:100%; height:100%; font-size:16px}
-  .mag::before{content:"\1F50D"; display:block; line-height:42px; text-align:center}
+  .mag{display:inline-block;width:100%;height:100%;font-size:16px}
+  .mag::before{content:"\1F50D";display:block;line-height:42px;text-align:center}
 
-  /* NEW: Player 2 button bar */
+  /* === Bottom link buttons styled like your screenshot ================== */
   .btnbar{
-    display:flex; justify-content:center; gap:12px;
-    margin:8px auto 24px; padding:0 16px; flex-wrap:wrap;
+    display:flex;justify-content:center;gap:min(8vw,80px);
+    margin:14px auto 20px;padding:0 16px;flex-wrap:wrap;
   }
   .btn{
-    font-family:"Player 2", system-ui, sans-serif; /* only buttons use Player 2 */
-    letter-spacing:.5px;
-    background:#000; color:var(--accent);
-    border:2px solid var(--accent);
-    padding:10px 18px; border-radius:6px; cursor:pointer;
-    text-decoration:none; display:inline-block; font-size:14px;
-    transition:transform .05s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
-    box-shadow:0 0 0 rgba(0,255,153,0);
+    color:#fff; /* white text like screenshot */
+    text-decoration:underline;
+    text-decoration-thickness:3px;        /* thick underline */
+    text-underline-offset:8px;            /* space between text and line */
+    letter-spacing:1px;
+    font-size:16px;
   }
   .btn:hover{
-    background:var(--accent); color:#000; text-decoration:none;
-    box-shadow:0 0 18px rgba(0,255,153,.45);
-    transform:translateY(-1px);
+    color:#fff; /* keep white */
+    text-decoration-color:var(--accent);  /* green underline on hover */
+    text-shadow:0 0 8px rgba(255,255,255,.35);
   }
-  .btn:active{ transform:translateY(1px) }
+  /* ===================================================================== */
 
-  /* Results area */
-  .results{
-    max-width:960px; width:92vw; margin:0 auto 32px; display:grid; gap:12px;
-  }
-  .card{border:1px solid var(--border); padding:14px; background:#000}
-  .src{color:var(--accent); font-size:10px; margin-bottom:6px}
-  .titlelink{color:var(--accent); text-decoration:underline}
-  .snippet{color:var(--accent); margin-top:4px}
+  .results{max-width:960px;width:92vw;margin:0 auto 32px;display:grid;gap:12px}
+  .card{border:1px solid var(--border);padding:14px;background:#000}
+  .src{color:var(--accent);font-size:10px;margin-bottom:6px}
+  .titlelink{color:var(--accent);text-decoration:underline}
+  .snippet{color:var(--accent);margin-top:4px}
 
-  /* Footer line */
-  footer{margin-top:auto; padding:18px 10px; text-align:center; color:var(--muted); border-top:1px solid var(--border)}
+  footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
   .small{font-size:10px}
 
   @media (max-width:520px){
     .title{font-size:22px}
-    .label{display:none} /* save space on tiny screens */
+    .label{display:none}
+    .btn{font-size:14px;text-underline-offset:6px}
+    .btnbar{gap:24px}
   }
 </style>
 </head>
@@ -134,7 +89,6 @@
   <div class="title">The Occult Reference Net</div>
 
   <div class="logo-wrap">
-    <!-- Put GB-Logo_TORN.png in the SAME folder as index.html -->
     <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
   </div>
 
@@ -146,13 +100,13 @@
     </div>
   </div>
 
-  <!-- NEW Button bar (Player 2 font) -->
-  <div class="btnbar" role="navigation" aria-label="Secondary">
+  <!-- Bottom link buttons (white with heavy underline) -->
+  <nav class="btnbar" aria-label="Quick links">
     <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">About</a>
     <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Contact</a>
     <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Sponsors</a>
     <a class="btn" href="https://www.theoccultreference.net/" target="_blank" rel="noopener">Forum</a>
-  </div>
+  </nav>
 
   <div id="results" class="results"></div>
 
@@ -160,7 +114,6 @@
     <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
   </footer>
 
-  <!-- Client-side search (FlexSearch) -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
     let data=[], index;
@@ -198,7 +151,7 @@
     document.getElementById('go').onclick = () => run();
     document.getElementById('q').addEventListener('keydown', e => { if(e.key==="Enter") run(); });
 
-    // Run default search on page load
+    // Default search on load
     window.addEventListener('DOMContentLoaded', () => {
       const defaultQuery = "Are you the Keymaster?";
       document.getElementById('q').value = defaultQuery;
@@ -207,4 +160,3 @@
   </script>
 </body>
 </html>
-
