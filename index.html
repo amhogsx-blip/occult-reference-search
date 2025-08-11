@@ -9,8 +9,6 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-  .slime-wrap{display:none !important;}
-
   :root{ --bg:#000; --fg:#fff; --muted:#bbb; --accent:#00ff99; --border:#333; }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -72,7 +70,7 @@
     text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px;
   }
 
-  /* ===== Idle Slime styles (element injected at runtime) ===== */
+  /* ===== Idle Slime styles (injected at runtime) ===== */
   .slime-wrap{ position:fixed; inset:0; display:none; z-index:9998; }
   .slime-wrap.show{ display:block; animation: slime-fade .6s ease; }
   @keyframes slime-fade{ from{opacity:0} to{opacity:1} }
@@ -133,10 +131,10 @@
     100% { filter: drop-shadow(0 0 10px rgba(255,192,203,.35)); }
   }
 
-  /* Respect reduced motion */
+  /* Respect reduced motion by default, but allow JS to force animation via .force-animate */
   @media (prefers-reduced-motion: reduce){
-    .slime.animate{ animation: none; top:0; }
-    .slime-wrap.show{ animation: none; }
+    body:not(.force-animate) .slime.animate{ animation: none; top:0; }
+    body:not(.force-animate) .slime-wrap.show{ animation: none; }
   }
 
   @media (max-width:520px){
@@ -269,11 +267,14 @@
     });
   </script>
 
-  <!-- Idle Slime (DYNAMIC: element is injected only when needed) -->
+  <!-- Idle Slime (dynamic; force-animate override for Reduce Motion) -->
   <script>
     (function(){
       const IDLE_MS = 45000; // 45s
       let t, slimed = false, wrap=null, panel=null, btn=null;
+
+      // Force animation even if user prefers-reduced-motion
+      document.body.classList.add('force-animate');
 
       function build(){
         if (wrap) return;
@@ -301,7 +302,6 @@
 
         // restart animation cleanly
         panel.classList.remove('animate');
-        // ensure next frame
         requestAnimationFrame(()=>{ panel.classList.add('animate'); });
       }
 
