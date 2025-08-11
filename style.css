@@ -1,8 +1,40 @@
-/* ===== Retro 1993 cursor pack ===== */
+/* ===== Large CRT-style glowing cursor ===== */
+
+/* Base cursor (default) */
 html, body {
-  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR4nKXT2woAEBAE0LH5/1/mhRJ7mV1eSOY0CQAY+Biy5jIix3pUIFH2UogGpBAL2EgIeQDVhgFchAU28kAZQG3TnYON0c4GVMACtDD1FuQKp1tEl1j+ZHRwAsArEBTVfekuAAAAAElFTkSuQmCC") 1 1, auto;
+  cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>\
+<polygon points='0,0 0,40 12,28 20,48 26,46 18,26 36,26' fill='white' filter='url(#glow)'/>\
+<defs>\
+<filter id='glow' x='-50%' y='-50%' width='200%' height='200%'>\
+  <feGaussianBlur in='SourceGraphic' stdDeviation='2' result='blur'/>\
+  <feMerge>\
+    <feMergeNode in='blur'/>\
+    <feMergeNode in='SourceGraphic'/>\
+  </feMerge>\
+</filter>\
+</defs>\
+</svg>") 0 0, auto;
 }
+
+/* Pointer cursor (links, buttons) */
 a, button, .btn, .titlelink {
-  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAANUlEQVR4nGNgGCrgPxRjAEYiNOLVx0Smi+BgmBuAKwApdgFKzNHMC0Q5n6YuoNgAQkmcegAANT4FFhsECrQAAAAASUVORK5CYII=") 7 1, pointer;
+  cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>\
+<circle cx='24' cy='24' r='8' fill='white' filter='url(#glow)'/>\
+<defs>\
+<filter id='glow' x='-50%' y='-50%' width='200%' height='200%'>\
+  <feGaussianBlur in='SourceGraphic' stdDeviation='2' result='blur'/>\
+  <feMerge>\
+    <feMergeNode in='blur'/>\
+    <feMergeNode in='SourceGraphic'/>\
+  </feMerge>\
+</filter>\
+</defs>\
+</svg>") 12 12, pointer;
 }
-input, textarea { cursor: text; }
+
+/* Text entry cursor */
+input, textarea {
+  cursor: text;
+}
