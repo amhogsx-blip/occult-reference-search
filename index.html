@@ -47,7 +47,7 @@
   .mag{display:inline-block;width:100%;height:100%;font-size:16px}
   .mag::before{content:"\1F50D";display:block;line-height:42px;text-align:center}
 
-  /* Bottom link buttons styled like your screenshot */
+  /* Bottom link buttons (white with heavy underline) */
   .btnbar{
     display:flex;justify-content:center;gap:min(8vw,80px);
     margin:14px auto 20px;padding:0 16px;flex-wrap:wrap;
@@ -74,6 +74,16 @@
 
   footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
   .small{font-size:10px}
+
+  /* Neon highlight for matched words */
+  mark{
+    background: transparent;
+    color: var(--accent);
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 2px;
+  }
 
   @media (max-width:520px){
     .title{font-size:22px}
@@ -116,45 +126,117 @@
   <!-- Client-side search (FlexSearch) -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
-    let data=[], index;
+    let data = [], index, byUrl = new Map();
+
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    // Highlight all query terms (case-insensitive)
+    function highlight(text, query){
+      if(!text || !query) return text || "";
+      const terms = [...new Set(query.trim().split(/\s+/).filter(Boolean))];
+      if(!terms.length) return text;
+      const re = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
+      return text.replace(re, "<mark>$1</mark>");
+    }
 
     async function load(){
-      const r=await fetch("index.json",{cache:"no-store"});
-      data=await r.json();
+      const r = await fetch("index.json",{cache:"no-store"});
+      data = await r.json();
+
+      byUrl.clear();
+      for(const d of data){ if(d && d.url) byUrl.set(d.url, d); }
+
       index = new FlexSearch.Document({
-        document: { id: "id", index: ["title","snippet","author","tags"] },
-        tokenize:"forward"
+        document: { id: "url", index: ["title","snippet","author","tags"] },
+        tokenize: "forward"
       });
-      for(const d of data) index.add(d);
+
+      for(const d of data){
+        try{ index.add(d); }catch(_) {}
+      }
+    }
+
+    function fallbackSearch(q){
+      const qlc = q.toLowerCase();
+      return data.filter(d =>
+        (d.title||"").toLowerCase().includes(qlc) ||
+        (d.snippet||"").toLowerCase().includes(qlc) ||
+        (d.author||"").toLowerCase().includes(qlc) ||
+        (d.collection||"").toLowerCase().includes(qlc)
+      ).map(d => d.url);
     }
 
     async function run(query){
-      const q = query !== undefined ? query.trim() : document.getElementById('q').value.trim();
-      const box=document.getElementById('results');
+      const qInput = document.getElementById('q');
+      const q = (query !== undefined ? query : qInput.value).trim();
+      const box = document.getElementById('results');
       if(!index) await load();
-      if(!q){ box.innerHTML=""; return; }
-      const results = index.search(q,{enrich:true});
-      const ids = [...new Set(results.flatMap(r => r.result))];
-      const hits = ids.map(id => data.find(d => d.id===id)).filter(Boolean).slice(0,50);
+      if(!q){ box.innerHTML = ""; return; }
+
+      let results = index.search(q, { enrich:true });
+      let ids = [...new Set(results.flatMap(r => r.result))];
+
+      if(ids.length === 0){
+        ids = fallbackSearch(q);
+      }
+
+      const hits = ids.map(u => byUrl.get(u)).filter(Boolean).slice(0,50);
       box.innerHTML = hits.length ? "" : "<div class='card'>No results. Try broader terms.</div>";
+
       for(const h of hits){
-        const el=document.createElement('div'); el.className="card";
+        const el = document.createElement('div'); el.className = "card";
+        const title = highlight(h.title || h.url, q);
+        const snippet = highlight(h.snippet || "", q);
         el.innerHTML = `
-          <div class="src">${h.collection||h.source} · ${h.type||"page"}</div>
-          <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${h.title}</a>
-          <div class="snippet">${h.snippet||""}</div>
+          <div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div>
+          <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a>
+          <div class="snippet">${snippet}</div>
           <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
         box.appendChild(el);
       }
     }
 
-    document.getElementById('go').onclick = () => run();
-    document.getElementById('q').addEventListener('keydown', e => { if(e.key==="Enter") run(); });
+    // Debounce helper (runs fn after user stops typing for delay ms)
+    function debounce(fn, delay=250){
+      let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), delay); };
+    }
+    const runDebounced = debounce(run, 250);
 
-    // Default search on load
+    document.getElementById('go').onclick = () => run();
+
+    // Default search + placeholder-like behavior + live typing
     window.addEventListener('DOMContentLoaded', () => {
       const defaultQuery = "Are you the Keymaster?";
-      document.getElementById('q').value = defaultQuery;
+      const qInput = document.getElementById('q');
+
+      // Placeholder styling
+      qInput.style.color = "#888";
+      qInput.value = defaultQuery;
+
+      function setDefault(){ qInput.value = defaultQuery; qInput.style.color = "#888"; }
+      function clearDefault(){
+        if(qInput.value === defaultQuery){
+          qInput.value = "";
+          qInput.style.color = "#fff";
+        }
+      }
+
+      // Clear default on focus; restore if empty on blur
+      qInput.addEventListener('focus', clearDefault);
+      qInput.addEventListener('blur', () => { if(qInput.value.trim()==="") setDefault(); });
+
+      // Live search as you type (debounced); ignore if showing default text
+      qInput.addEventListener('input', () => {
+        if(qInput.value === defaultQuery){ return; }
+        qInput.style.color = "#fff";
+        if(qInput.value.trim()===""){ document.getElementById('results').innerHTML=""; return; }
+        runDebounced(qInput.value);
+      });
+
+      // Enter key triggers immediate search
+      qInput.addEventListener('keydown', e => { if(e.key==="Enter"){ e.preventDefault(); run(); } });
+
+      // Kick off with the default query shown & searched
       run(defaultQuery);
     });
   </script>
