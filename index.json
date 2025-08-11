@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://rmc.library.cornell.edu/witchcraftcoll/",
+    "title": "Cornell Witchcraft Collection",
+    "snippet": "An extensive archive on witchcraft trials and related materials.",
+    "source": "rmc.library.cornell.edu",
+    "collection": "Cornell Witchcraft",
+    "type": "collection",
+    "author": "Cornell University Library",
+    "year": 2024
+  },
+  {
+    "url": "https://digitaloccultlibrary.commons.gc.cuny.edu/",
+    "title": "CUNY Digital Occult Library",
+    "snippet": "Community-driven resources on occult texts and research.",
+    "source": "digitaloccultlibrary.commons.gc.cuny.edu",
+    "collection": "CUNY Digital Occult Library",
+    "type": "portal",
+    "author": "CUNY",
+    "year": 2023
+  }
+]
