@@ -6,19 +6,16 @@
 <title>The Occult Reference Net</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg:#000; --fg:#fff; --accent:#00ff99; --muted:#bdbdbd; --border:#333;
-  }
+  :root{ --bg:#000; --fg:#fff; --accent:#00ff99; --muted:#bdbdbd; --border:#333; }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;background:var(--bg);color:var(--fg);
     font-family:"Press Start 2P",monospace;font-size:12px;line-height:1.45;
     display:flex;flex-direction:column;overflow-x:hidden;position:relative;
-    cursor:none; /* custom cursor drawn below */
+    cursor:none;
   }
-
-  /* ===== CRT scanlines + vignette ===== */
+  /* CRT */
   body::before{
     content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
     background:
@@ -32,7 +29,6 @@
   }
   @keyframes scanFlicker{0%{opacity:.25}45%{opacity:.32}50%{opacity:.22}55%{opacity:.32}100%{opacity:.25}}
 
-  /* ===== Layout ===== */
   .wrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
   .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 10px rgba(0,255,153,.22)}
   .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
@@ -54,13 +50,13 @@
   mark{background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
   footer{margin-top:auto;padding:16px 10px;text-align:center;color:var(--muted);border-top:1px solid #233;z-index:2;font-size:10px}
 
-  /* ===== Slime overlay ===== */
+  /* Slime overlay */
   #gooWrap{position:fixed;inset:0;z-index:9999;display:none}
   #goo,#gooHud{position:absolute;inset:0;width:100%;height:100%;display:block}
   #gooHud{pointer-events:none}
   #gooClose{position:absolute;top:10px;right:12px;z-index:10000;width:28px;height:28px;line-height:24px;border-radius:50%;border:1px solid #333;background:rgba(0,0,0,.35);color:#fff;cursor:pointer;display:none}
 
-  /* ===== Retro pixel-arrow cursor with CRT glow ===== */
+  /* Retro pixel-arrow cursor with glow */
   .crt-cursor{
     position:fixed;left:0;top:0;width:26px;height:36px;pointer-events:none;z-index:10002;
     background:#fff;
@@ -75,7 +71,6 @@
     transform:translate(-2px,-2px);transition:transform .08s ease-out;
   }
   .crt-cursor.click{transform:translate(-2px,-2px) scale(.92)}
-
   @media (max-width:560px){.label{display:none}.menu{gap:28px}.menu a{font-size:14px;text-underline-offset:6px}}
 </style>
 </head>
@@ -111,7 +106,7 @@
     <button id="gooClose" aria-label="Dismiss slime">×</button>
   </div>
 
-  <!-- Retro pixel-arrow cursor -->
+  <!-- Cursor -->
   <script>
     (function(){
       const cursor=document.createElement('div');
@@ -125,7 +120,6 @@
       addEventListener('mousedown',()=>cursor.classList.add('click'));
       addEventListener('mouseup',()=>cursor.classList.remove('click'));
       loop();
-      // keep I-beam over inputs
       document.querySelectorAll('input,textarea').forEach(el=>{
         el.addEventListener('mouseenter',()=>{document.body.style.cursor='text';});
         el.addEventListener('mouseleave',()=>{document.body.style.cursor='none';});
@@ -133,7 +127,7 @@
     })();
   </script>
 
-  <!-- Minimal search (local index.json if present) -->
+  <!-- Minimal local search (uses index.json if present) -->
   <script>
     function escapeRegExp(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
     function highlight(t,q){if(!t||!q)return t||"";const terms=[...new Set(q.trim().split(/\s+/).filter(Boolean))];if(!terms.length)return t;const re=new RegExp("("+terms.map(escapeRegExp).join("|")+")","ig");return t.replace(re,"<mark>$1</mark>");}
@@ -144,13 +138,13 @@
     const qEl=document.getElementById('q');const def="Are you the Keymaster?";qEl.value=def;qEl.addEventListener('focus',()=>{if(qEl.value===def)qEl.value="";});qEl.addEventListener('blur',()=>{if(qEl.value.trim()==="")qEl.value=def;});document.getElementById('go').addEventListener('click',runSearch);qEl.addEventListener('keydown',e=>{if(e.key==="Enter")runSearch();});
   </script>
 
-  <!-- Slime animation (Three.js via CDN) -->
+  <!-- Slime (Three.js via CDN) -->
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
     import { MarchingCubes } from 'https://unpkg.com/three@0.160.0/examples/jsm/objects/MarchingCubes.js';
     import { RoomEnvironment } from 'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
 
-    const IDLE_MS = 45000; // show after 45s of no input
+    const IDLE_MS = 45000;
     const wrap = document.getElementById('gooWrap');
     const goo = document.getElementById('goo');
     const hud = document.getElementById('gooHud');
@@ -161,26 +155,16 @@
     let running=false, raf, idleTimer, tLast=0, tSpawn=0;
     let balls=[];
 
-    const SIM = {
-      resolution: 70, maxBalls: 32, gravity: 18, viscosity: 0.985,
-      spawnEvery: 0.22, spawnJitterX: 0.28, radiusBase: 0.7, radiusVar: 0.6, surface: 2.5
-    };
+    const SIM = { resolution:70, maxBalls:32, gravity:18, viscosity:0.985, spawnEvery:0.22, spawnJitterX:0.28, radiusBase:0.7, radiusVar:0.6, surface:2.5 };
 
     function fit(){
       dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
       W=wrap.clientWidth=innerWidth; H=wrap.clientHeight=innerHeight;
-
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(W,H,false);
-
-      hud.width=Math.round(W*dpr); hud.height=Math.round(H*dpr);
-      hud.style.width=W+'px'; hud.style.height=H+'px';
+      renderer.setPixelRatio(dpr); renderer.setSize(W,H,false);
+      hud.width=Math.round(W*dpr); hud.height=Math.round(H*dpr); hud.style.width=W+'px'; hud.style.height=H+'px';
       hudCtx.setTransform(dpr,0,0,dpr,0,0);
-
       camera.left=-W/2; camera.right=W/2; camera.top=H/2; camera.bottom=-H/2; camera.updateProjectionMatrix();
-
-      cubes.position.set(-W/2,-H/2,0);
-      cubes.scale.set(W,H,Math.max(W,H));
+      cubes.position.set(-W/2,-H/2,0); cubes.scale.set(W,H,Math.max(W,H));
     }
 
     async function init(){
@@ -200,8 +184,8 @@
       scene.environment=envTex;
 
       material=new THREE.MeshPhysicalMaterial({
-        metalness:0.0, roughness:0.1, transmission:1.0, thickness:2.6, ior:1.38,
-        attenuationColor:new THREE.Color(1.0,0.48,0.62), attenuationDistance:0.9,
+        metalness:0, roughness:0.1, transmission:1, thickness:2.6, ior:1.38,
+        attenuationColor:new THREE.Color(1,0.48,0.62), attenuationDistance:0.9,
         clearcoat:0.5, clearcoatRoughness:0.18, envMapIntensity:1.3
       });
 
@@ -225,10 +209,9 @@
     function step(dt){
       for(const b of balls){ b.vy+=SIM.gravity*dt; b.vy*=SIM.viscosity; b.y+=b.vy; }
       balls=balls.filter(b=>b.y<H+100);
-
       cubes.reset();
       for(const b of balls){ cubes.addBall(b.x/W,b.y/H,0.5+b.z*0.1,b.r,1); }
-      for(let i=0;i<12;i++){ cubes.addBall(i/11,-0.03,0.5,0.42,0.8); } // top “lip”
+      for(let i=0;i<12;i++){ cubes.addBall(i/11,-0.03,0.5,0.42,0.8); }
     }
 
     function drawHud(){
@@ -282,7 +265,6 @@
     addEventListener('keydown',e=>{ if(e.key==='Escape'){hide();arm();} if(e.key.toLowerCase()==='s'){show();}});
     ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>addEventListener(ev,arm,{passive:true}));
 
-    // debug: show immediately with ?slime=1
     if(new URLSearchParams(location.search).get('slime')==='1'){ setTimeout(show,300); }
     addEventListener('DOMContentLoaded',arm);
   </script>
