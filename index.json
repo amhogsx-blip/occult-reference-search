@@ -36,3 +36,39 @@
     "tags": ["witchcraft","cornell","history"]
   }
 ]
+<script>
+/* Replace your existing resultHTML with this */
+function resultHTML(h){
+  // Badges (PDF, filesize, dates)
+  const badges = [];
+  if (h.is_pdf) badges.push(`<span class="badge pdf">PDF</span>`);
+  if (h.filesize) badges.push(`<span class="badge">${fmtBytes(h.filesize)}</span>`);
+  if (h.pub_date) badges.push(`<span class="badge">${h.pub_date}</span>`);
+  if (!h.pub_date && h.lastmod) badges.push(`<span class="badge">${h.lastmod}</span>`);
+
+  // Optional thumbnail + keywords (from enriched crawler)
+  const thumb = h.thumb
+    ? `<img class="thumb" src="${h.thumb}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+    : "";
+
+  const tags = (h.tags && h.tags.length)
+    ? `<div class="tagline">Keywords: ${h.tags.slice(0,8).join(", ")}</div>`
+    : "";
+
+  // Card HTML (no source/domain/collection shown)
+  return `
+    <div class="result">
+      <div class="titleline">
+        <a class="result-title" href="${h.url}" target="_blank" rel="noopener">${h.title || h.url}</a>
+        ${badges.join(" ")}
+      </div>
+      ${thumb}
+      <div class="snippet">${h.snippet || ""}</div>
+      ${tags}
+      <div class="actions">
+        <a class="action-btn" href="${h.url}" target="_blank" rel="noopener">Open</a>
+        ${h.is_pdf ? `<button class="action-btn preview-btn" data-url="${h.url}" data-title="${encodeURIComponent(h.title||'PDF')}">Preview</button>` : ``}
+      </div>
+    </div>`;
+}
+</script>
