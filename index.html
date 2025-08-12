@@ -4,13 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Favicon (prevents /favicon.ico 404) -->
+<!-- Favicon -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='black'/%3E%3Ccircle cx='32' cy='36' r='16' fill='%23ff69b4'/%3E%3C/svg%3E">
 
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-<!-- FlexSearch MUST load before our search code -->
+<!-- FlexSearch (must load before search code) -->
 <script src="https://cdn.jsdelivr.net/npm/flexsearch@0.7.31/dist/flexsearch.bundle.js"></script>
 
 <style>
@@ -21,7 +21,12 @@
     margin:0; background:var(--bg); color:var(--fg);
     font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
     display:flex; flex-direction:column; overflow-x:hidden; position:relative;
+    cursor:none; /* hide OS cursor; we draw our own */
   }
+  /* Show pointer for text fields so typing feels normal */
+  input, textarea { cursor:text; }
+  button, a { cursor:none; }
+
   /* CRT vibe */
   body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2}
   body::before{
@@ -73,12 +78,15 @@
     border:1px solid #333; background:rgba(0,0,0,.35); color:#fff; cursor:pointer; display:none;
   }
 
-  @media (max-width:520px){
-    .title{font-size:22px}
-    .label{display:none}
-    .btn{font-size:14px;text-underline-offset:6px}
-    .btnbar{gap:24px}
+  /* Big white glowing CRT cursor */
+  .crt-cursor{
+    position:fixed; left:0; top:0; width:28px; height:28px; margin-left:-14px; margin-top:-14px;
+    border-radius:50%; pointer-events:none; z-index:10001; mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(255,255,255,0.95) 0 35%, rgba(255,255,255,0.55) 36% 55%, rgba(255,255,255,0.0) 56% 100%);
+    box-shadow:0 0 12px rgba(255,255,255,0.7), 0 0 38px rgba(255,255,255,0.35);
+    transition: transform .08s ease-out;
   }
+  .crt-cursor.click { transform: scale(0.88); }
 </style>
 </head>
 <body>
@@ -188,10 +196,11 @@
     const wrap = document.getElementById('gooWrap');
     const hud = document.getElementById('gooHud');
     const closeBtn = document.getElementById('gooClose');
-    let hudCtx, W=0, H=0, dpr=1;
 
+    // --- single declarations (fixes "raf already declared") ---
+    let hudCtx, W=0, H=0, dpr=1;
     let renderer, scene, camera, cubes, material, envTex;
-    let running = false, raf, idleTimer;
+    let running = false, raf, idleTimer, tLast = 0;
     let balls = [];
 
     const SIM = {
@@ -259,7 +268,7 @@
       window.addEventListener('resize', ()=>{ if(running) fit(); });
     }
 
-    let tLast = 0, tSpawn = 0;
+    let tSpawn = 0;
     function spawn(dt){
       tSpawn += dt;
       if (tSpawn < SIM.spawnEvery || balls.length >= SIM.maxBalls) return;
@@ -280,14 +289,14 @@
       for (const b of balls){
         cubes.addBall(b.x/W, b.y/H, 0.5 + b.z*0.1, b.r, 1);
       }
-      for (let i=0;i<12;i++){ cubes.addBall(i/11, -0.03, 0.5, 0.42, 0.8); } // “lip” at the top
+      for (let i=0;i<12;i++){ cubes.addBall(i/11, -0.03, 0.5, 0.42, 0.8); } // lip
     }
 
     function drawHud(){
       const ctx = hudCtx;
       ctx.clearRect(0,0,W,H);
 
-      // soft highlights (screen-space)
+      // soft highlights
       ctx.globalCompositeOperation='lighter';
       ctx.globalAlpha = 0.24;
       const g1 = ctx.createRadialGradient(W*0.22, 90, 10, W*0.22, 90, 180);
@@ -302,7 +311,7 @@
 
       ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
 
-      // shadow band where goo overlaps content
+      // shadow band
       const y = Math.min(H, balls.reduce((m,b)=>Math.max(m,b.y), 0)+30);
       const gl = ctx.createLinearGradient(0,y,0,y+80);
       gl.addColorStop(0,'rgba(0,0,0,0)');
@@ -310,7 +319,6 @@
       ctx.fillStyle=gl; ctx.fillRect(0,y,W,80);
     }
 
-    let raf;
     function loop(ts){
       if(!running) return;
       if(!tLast) tLast = ts;
@@ -326,20 +334,18 @@
       raf = requestAnimationFrame(loop);
     }
 
-    let running = false, idleTimer, tLast = 0;
     function show(){
       if(running) return;
       if(!renderer){ init().then(show); return; }
       wrap.style.display='block';
-      document.getElementById('gooClose').style.display='block';
+      closeBtn.style.display='block';
       running = true; tLast = 0; balls.length = 0;
       raf = requestAnimationFrame(loop);
       wrap.setAttribute('aria-hidden','false');
     }
     function hide(){
       running = false; cancelAnimationFrame(raf);
-      document.getElementById('gooClose').style.display='none';
-      wrap.style.display='none';
+      closeBtn.style.display='none'; wrap.style.display='none';
       wrap.setAttribute('aria-hidden','true');
     }
     function arm(){
@@ -348,19 +354,47 @@
       idleTimer = setTimeout(show, IDLE_MS);
     }
 
-    document.getElementById('gooClose').addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
-    document.getElementById('gooWrap').addEventListener('click', ()=>{ hide(); arm(); });
+    closeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
+    wrap.addEventListener('click', ()=>{ hide(); arm(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); } if(e.key.toLowerCase()==='s'){ show(); }});
     ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>window.addEventListener(ev, arm, {passive:true}));
 
     // Debug: ?slime=1 → show immediately
     if(new URLSearchParams(location.search).get('slime')==='1'){ setTimeout(show, 300); }
-
-    // Start idle timer once the DOM is ready
     window.addEventListener('DOMContentLoaded', arm);
   </script>
 
-  <!-- Optional: animated CRT cursor -->
-  <!-- <script src="cursor.js" defer></script> -->
+  <!-- Big white glowing CRT cursor (no external file) -->
+  <script>
+    (function(){
+      const dot = document.createElement('div');
+      dot.className = 'crt-cursor';
+      document.body.appendChild(dot);
+
+      let x=window.innerWidth/2, y=window.innerHeight/2, tx=x, ty=y;
+      const speed = 0.35; // smoothing
+
+      function move(e){
+        tx = e.clientX; ty = e.clientY;
+      }
+      function loop(){
+        x += (tx - x) * speed;
+        y += (ty - y) * speed;
+        dot.style.transform = `translate(${x}px,${y}px)`;
+        requestAnimationFrame(loop);
+      }
+      window.addEventListener('mousemove', move, {passive:true});
+      window.addEventListener('mousedown', ()=>{ dot.classList.add('click'); });
+      window.addEventListener('mouseup',   ()=>{ dot.classList.remove('click'); });
+      loop();
+
+      // Make inputs show text cursor while typing
+      document.querySelectorAll('input, textarea').forEach(el=>{
+        el.addEventListener('mouseenter', ()=>{ document.body.style.cursor='text'; });
+        el.addEventListener('mouseleave', ()=>{ document.body.style.cursor='none'; });
+      });
+    })();
+  </script>
+
 </body>
 </html>
