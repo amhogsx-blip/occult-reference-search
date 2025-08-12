@@ -9,6 +9,9 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='black'/%3E%3Ccircle cx='32' cy='36' r='16' fill='%23ff69b4'/%3E%3C/svg%3E">
 
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<!-- FlexSearch (global `FlexSearch`) -->
+<script src="https://cdn.jsdelivr.net/npm/flexsearch@0.7.31/dist/flexsearch.bundle.js"></script>
+
 <style>
   :root{ --bg:#000; --fg:#fff; --accent:#00ff99; --muted:#bdbdbd; --border:#333; --panel:#0b0b0b; }
   *{box-sizing:border-box}
@@ -38,7 +41,7 @@
   .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 10px rgba(0,255,153,.22)}
   .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
   .logo{width:min(520px,70vw);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 0 16px rgba(0,0,0,.65))}
-  .search-row{display:flex;align-items:center;gap:12px;margin:12px auto 22px;padding:0 16px}
+  .search-row{display:flex;align-items:center;gap:12px;margin:12px auto 10px;padding:0 16px}
   .label{font-size:14px}
   .field{display:flex;align-items:stretch;border:2px solid var(--fg);background:#000}
   input[type="search"]{width:min(640px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font:inherit}
@@ -48,11 +51,19 @@
   .menu a{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
   .menu a:hover{text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
 
-  /* Two-column results layout */
+  /* Filters */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:4px 0 12px}
+  .chip{
+    border:1px solid #2a5; color:#9effd2; background:#000; cursor:pointer;
+    padding:6px 10px; font-size:10px; border-radius:999px; user-select:none;
+  }
+  .chip.active{ border-color: var(--accent); color:#fff; box-shadow: 0 0 8px rgba(0,255,153,.35) inset; }
+
+  /* Two-column layout */
   .content{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start;width:92vw;max-width:1200px;margin:0 auto 28px;z-index:2}
   @media (max-width:980px){ .content{grid-template-columns:1fr} }
 
-  /* Results (left) */
+  /* Results */
   .results{ display:grid; gap:12px }
   .section-title{ color:#8ac6ad; font-size:11px; margin:14px 0 4px; letter-spacing:1px }
   .result{
@@ -73,23 +84,23 @@
   .action-btn:hover{ border-color: var(--accent); text-shadow:0 0 6px rgba(255,255,255,.3) }
   mark{ background:transparent; color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:2px }
 
-  /* Wiki panel (right) */
-  .panel{
-    border:1px solid var(--border); background:var(--panel);
-    padding:12px; position:sticky; top:14px;
-  }
+  /* More results */
+  .more-wrap{ display:flex; justify-content:center; margin:12px 0 0 }
+  .more-btn{ background:#000; color:#fff; border:1px solid #3a3a3a; padding:8px 14px; font-size:11px; cursor:pointer; }
+  .more-btn:hover{ border-color: var(--accent); }
+
+  /* Wiki panel (hidden by default; shown after search) */
+  .panel{ border:1px solid var(--border); background:var(--panel); padding:12px; position:sticky; top:14px; }
   .panel h3{ margin:4px 0 8px; font-size:14px }
   .panel small{ color:var(--muted) }
   .wthumb{ width:100%; height:auto; border:1px solid #1f1f1f; background:#000; display:block; margin:8px 0 }
   .wdesc{ color:#dfe; font-size:11px; margin-top:6px }
   .wlinks{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap }
-  .wbtn{
-    background:#000; color:#fff; border:1px solid #3a3a3a; padding:6px 10px; font-size:10px; cursor:pointer; text-decoration:none;
-  }
+  .wbtn{ background:#000; color:#fff; border:1px solid #3a3a3a; padding:6px 10px; font-size:10px; cursor:pointer; text-decoration:none; }
   .wbtn:hover{ border-color: var(--accent); text-shadow:0 0 6px rgba(255,255,255,.3) }
   .wmuted{ color:#8ac6ad; font-size:10px; margin-top:4px }
 
-  /* Modal PDF viewer */
+  /* PDF modal */
   #pdfModal{ position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; z-index:10050; }
   #pdfInner{ position:absolute; inset:5% 5%; background:#000; border:1px solid #333; display:flex; flex-direction:column; }
   #pdfBar{ padding:6px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; }
@@ -137,12 +148,16 @@
       <a href="sponsors.html">Sponsors</a>
       <a href="forum.html">Forum</a>
     </nav>
+
+    <!-- Dynamic filter chips -->
+    <div id="filters" class="filters"></div>
   </div>
 
   <!-- Two-column results + wiki panel -->
   <main class="content">
     <section id="results" class="results" aria-live="polite"></section>
-    <aside id="wiki" class="panel" aria-live="polite">
+    <!-- HIDDEN BY DEFAULT -->
+    <aside id="wiki" class="panel" aria-live="polite" style="display:none;">
       <h3>Quick Summary</h3>
       <small>Powered by Wikipedia</small>
       <div id="wContent" class="wdesc">Type a query to see an overview here.</div>
@@ -183,42 +198,31 @@
     })();
   </script>
 
-  <!-- Search + Wiki logic -->
+  <!-- Search + Filters + Wiki + Pagination -->
   <script>
-    // ---------- Helpers ----------
-    function fmtBytes(b){
-      if(!b || isNaN(b)) return "";
-      const u=["B","KB","MB","GB"]; let i=0; let n=b;
-      while(n>=1024 && i<u.length-1){ n/=1024; i++; }
-      return n.toFixed(n<10 && i>0?1:0)+" "+u[i];
-    }
+    // ---------- Utils ----------
+    function fmtBytes(b){ if(!b||isNaN(b)) return ""; const u=["B","KB","MB","GB"]; let i=0,n=b; while(n>=1024&&i<u.length-1){n/=1024;i++;} return n.toFixed(n<10&&i>0?1:0)+" "+u[i]; }
     function escapeRegExp(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-    function highlight(t,q){
-      if(!t||!q) return t||"";
-      const terms=[...new Set(q.trim().split(/\s+/).filter(Boolean))];
-      if(!terms.length) return t;
-      const re=new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
-      return t.replace(re,"<mark>$1</mark>");
-    }
-    function faviconURL(domain){
-      return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=16";
-    }
-    function getParam(name){
-      const url = new URL(location.href);
-      return url.searchParams.get(name);
-    }
-    function setParam(name, value){
-      const url = new URL(location.href);
-      if(value) url.searchParams.set(name, value); else url.searchParams.delete(name);
-      history.replaceState(null, "", url.toString());
-    }
+    function highlight(t,q){ if(!t||!q) return t||""; const terms=[...new Set(q.trim().split(/\s+/).filter(Boolean))]; if(!terms.length) return t; const re=new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig"); return t.replace(re,"<mark>$1</mark>");}
+    function faviconURL(domain){ return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=16"; }
+    function getParam(name){ const url=new URL(location.href); return url.searchParams.get(name); }
+    function setParam(name, value){ const url=new URL(location.href); if(value){url.searchParams.set(name,value)}else{url.searchParams.delete(name)} history.replaceState(null,"",url.toString()); }
 
-    // ---------- Load index ----------
-    let data=[];
+    // ---------- Data ----------
+    let data=[];       // raw records
+    let fx=null;       // FlexSearch index
+    let byId={};       // id -> record
+    let activeFilter="all";
+    const PAGE_SIZE=10;
+    let lastQuery="", pageCursor=0, currentHits=[];
+
     async function loadIndex(){
       try{
         const r=await fetch("index.json",{cache:"no-store"});
         data=await r.json();
+        data.forEach((d,i)=>{ d.id=i; d.domain=d.domain || new URL(d.url).hostname; byId[i]=d; });
+        buildFilters();
+        await buildFlexSearch();
         console.log("Search index loaded:", data.length, "records");
       }catch(e){
         console.warn("index.json missing or invalid; search will be empty.", e);
@@ -226,8 +230,63 @@
       }
     }
 
-    // Basic scoring (title > snippet > collection > domain), plus PDF slight boost
-    function localSearch(q){
+    async function buildFlexSearch(){
+      try{
+        if(!window.FlexSearch) throw new Error("FlexSearch not available");
+        fx = new FlexSearch.Document({
+          tokenize: "forward",
+          cache: true,
+          document: {
+            id: "id",
+            index: [
+              { field: "title", tokenize:"forward", weight: 8 },
+              { field: "snippet", tokenize:"forward", weight: 4 },
+              { field: "collection", tokenize:"forward", weight: 3 },
+              { field: "domain", tokenize:"forward", weight: 2 },
+              { field: "tags", tokenize:"forward", weight: 2 }
+            ],
+            store: ["id"]
+          }
+        });
+        for(const rec of data){ fx.add(rec); }
+      }catch(e){
+        fx = null; // fall back
+      }
+    }
+
+    // ---------- Filters ----------
+    function uniqueCollections(){
+      const set = new Set();
+      data.forEach(d=>{ if(d.collection) set.add(d.collection); });
+      return Array.from(set).sort();
+    }
+
+    function buildFilters(){
+      const cont = document.getElementById('filters');
+      const colls = uniqueCollections();
+      cont.innerHTML = "";
+      const mk = (label,val)=> {
+        const a=document.createElement('button'); a.className='chip'; a.textContent=label; a.dataset.value=val;
+        if(val===activeFilter) a.classList.add('active');
+        a.onclick=()=>{ activeFilter=val; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); a.classList.add('active'); setParam('site', val==='all'?"":val); runSearch(); };
+        cont.appendChild(a);
+      };
+      mk("All","all");
+      colls.forEach(c=> mk(c, c));
+      const siteParam = getParam('site');
+      if(siteParam && (siteParam==="all" || colls.includes(siteParam))){
+        activeFilter = siteParam;
+        document.querySelectorAll('.chip').forEach(c=>{ if(c.dataset.value===activeFilter) c.classList.add('active'); });
+      }
+    }
+
+    function applyFilter(list){
+      if(activeFilter==="all") return list;
+      return list.filter(r => (r.collection||"") === activeFilter);
+    }
+
+    // ---------- Search ----------
+    function fallbackSearch(q){
       const ql=q.toLowerCase();
       return data.map(d=>{
         const title=(d.title||"").toLowerCase();
@@ -239,14 +298,32 @@
         if(snip.includes(ql)) score+=1.2;
         if(coll.includes(ql)) score+=0.6;
         if(dom.includes(ql))  score+=0.3;
-        if(d.is_pdf) score+=0.2; // give PDFs a nudge
+        if(d.is_pdf) score+=0.2;
         return {doc:d,score};
       }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).map(x=>x.doc);
     }
 
-    function renderSection(title, items, q){
-      if(!items.length) return "";
-      const rows = items.map(h=>{
+    async function search(q){
+      if(!data.length) await loadIndex();
+      let hits=[];
+      if(fx){
+        const res = await fx.search(q, { enrich:true, limit:200 });
+        const ids = []; const seen = new Set();
+        for(const group of res){
+          for(const m of group.result){
+            if(!seen.has(m.id)){ seen.add(m.id); ids.push(m.id); }
+          }
+        }
+        hits = ids.map(id=>byId[id]);
+      } else {
+        hits = fallbackSearch(q);
+      }
+      hits = applyFilter(hits);
+      return hits;
+    }
+
+    function renderSection(items, q){
+      return items.map(h=>{
         const dom = h.domain || (new URL(h.url)).hostname;
         const size = h.filesize ? fmtBytes(h.filesize) : "";
         const when = h.lastmod || "";
@@ -259,7 +336,7 @@
             <img class="favicon" src="${faviconURL(dom)}" alt="">
             <div>
               <div class="meta-row">
-                <span class="urlcrumb">${dom}</span>
+                <span class="urlcrumb">${dom}${h.collection?` · ${h.collection}`:""}</span>
                 ${badges.join(" ")}
               </div>
               <div class="titleline">
@@ -274,34 +351,55 @@
           </div>
         `;
       }).join("");
-      return `<div class="section-title">${title}</div>${rows}`;
     }
 
-    function renderResults(q, hits){
+    function renderResults(q, hits, append=false){
       const box=document.getElementById('results');
-      if(!hits.length){ box.innerHTML="<div class='result'><div></div><div>No results. Try broader terms.</div></div>"; return; }
+      if(!append){
+        box.innerHTML = "";
+        pageCursor = 0;
+      }
+      if(!hits.length){
+        box.innerHTML = "<div class='result'><div></div><div>No results. Try broader terms.</div></div>";
+        document.getElementById('moreWrap')?.remove();
+        return;
+      }
 
-      // Split into Top and PDFs section (like Google groupings)
-      const pdfs = hits.filter(h=>h.is_pdf);
-      const nonpdf = hits.filter(h=>!h.is_pdf);
+      const nextChunk = hits.slice(pageCursor, pageCursor + PAGE_SIZE);
+      if(!append){
+        const pdfs = hits.filter(h=>h.is_pdf);
+        const nonpdf = hits.filter(h=>!h.is_pdf);
+        const top = nonpdf.slice(0,6).concat(pdfs.slice(0,4));
+        const restStart = new Set(top.map(t=>t.id));
+        const rest = hits.filter(h=>!restStart.has(h.id));
+        const firstBatch = (top.concat(rest)).slice(0, PAGE_SIZE);
+        box.innerHTML = renderSection(firstBatch, q);
+        pageCursor = firstBatch.length;
+      } else {
+        box.insertAdjacentHTML('beforeend', renderSection(nextChunk, q));
+        pageCursor += nextChunk.length;
+      }
 
-      // Top = first 6 non-PDFs (if any), then first 4 PDFs
-      const top = nonpdf.slice(0,6).concat(pdfs.slice(0,4));
-      const rest = hits.filter(h=>!top.includes(h));
-
-      box.innerHTML =
-        renderSection("Top results", top, q) +
-        (pdfs.length ? renderSection("PDFs", pdfs, q) : "") +
-        (rest.length ? renderSection("More results", rest, q) : "");
-
-      // Wire preview buttons
       document.querySelectorAll('.preview-btn').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
+        btn.onclick = ()=>{
           const url=btn.getAttribute('data-url');
           const t = decodeURIComponent(btn.getAttribute('data-title')||'PDF Preview');
           openPdfPreview(url, t);
-        });
+        };
       });
+
+      document.getElementById('moreWrap')?.remove();
+      if(pageCursor < hits.length){
+        const wrap = document.createElement('div');
+        wrap.id = 'moreWrap';
+        wrap.className = 'more-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'more-btn';
+        btn.textContent = 'More results';
+        btn.onclick = ()=> renderResults(q, hits, true);
+        wrap.appendChild(btn);
+        box.parentElement.insertBefore(wrap, box.nextSibling);
+      }
     }
 
     // ---------- PDF Modal ----------
@@ -309,7 +407,6 @@
     const frame = document.getElementById('pdfFrame');
     const titleEl = document.getElementById('pdfTitle');
     const closeBtn = document.getElementById('pdfClose');
-
     function openPdfPreview(url, title){
       const viewer = "https://docs.google.com/gview?embedded=1&url=" + encodeURIComponent(url);
       frame.src = viewer;
@@ -327,11 +424,11 @@
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePdf(); });
 
     // ---------- Wikipedia panel ----------
+    const wikiPanel = document.getElementById('wiki');
     const wBox = document.getElementById('wContent');
     async function fetchWikiSummary(q){
-      if(!q) { wBox.innerHTML = "Type a query to see an overview here."; return; }
+      if(!q) { wBox.textContent = "Type a query to see an overview here."; return; }
       try{
-        // Try exact summary
         const s = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
         if(s.ok){
           const j = await s.json();
@@ -348,7 +445,6 @@
           `;
           return;
         }
-        // Fallback: get a suggestion
         const sug = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=1&namespace=0&format=json&origin=*`);
         const sj = await sug.json();
         const suggested = sj && sj[1] && sj[1][0];
@@ -374,7 +470,7 @@
       }
     }
 
-    // ---------- Wire search ----------
+    // ---------- Wire search & params ----------
     const qEl=document.getElementById('q');
     const def="Are you the Keymaster?";
     qEl.value = getParam('q') || def;
@@ -386,17 +482,33 @@
       setParam('q', q && q!==def ? q : "");
       if(!data.length) await loadIndex();
       document.getElementById('results').innerHTML = "";
-      if(!q || q===def){ fetchWikiSummary(""); return; }
-      const hits = localSearch(q);
 
-      renderResults(q, hits);
+      // Hide wiki panel until a *real* query is provided
+      if(!q || q===def){
+        wikiPanel.style.display = "none";
+        document.getElementById('moreWrap')?.remove();
+        return;
+      }
+
+      currentHits = await search(q);
+      lastQuery = q;
+      renderResults(q, currentHits, false);
+
+      // Show wiki panel only after searching
+      wikiPanel.style.display = "block";
       fetchWikiSummary(q);
     }
+
     document.getElementById('go').addEventListener('click', runSearch);
     qEl.addEventListener('keydown', e=>{ if(e.key==="Enter"){ e.preventDefault(); runSearch(); }});
 
-    // Run on load if ?q= present
-    window.addEventListener('load', runSearch);
+    // Initialize (respect ?q= and ?site=)
+    window.addEventListener('load', async ()=>{
+      await loadIndex();
+      const qStart = getParam('q');
+      if(qStart){ qEl.value = qStart; }
+      runSearch(); // will keep wiki hidden until query is real
+    });
   </script>
 </body>
 </html>
