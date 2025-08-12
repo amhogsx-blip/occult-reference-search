@@ -1,60 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Forum - The Occult Reference Net</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forum – The Occult Reference Net</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-:root{--bg:#000;--fg:#fff;--muted:#bbb;--accent:#00ff99;--border:#333;}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:"Press Start 2P",monospace;font-size:12px;line-height:1.45}
-body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999}
-body::before{background:linear-gradient(rgba(0,255,153,.06), rgba(0,255,153,.06)) 0 0/100% 100%,repeating-linear-gradient(0deg,rgba(0,255,153,.08) 0,rgba(0,255,153,.08) 1px,transparent 2px,transparent 4px);mix-blend-mode:screen;animation:scan-flicker 6s infinite linear}
-body::after{box-shadow:inset 0 0 120px rgba(0,255,153,.12),inset 0 0 280px rgba(0,255,153,.08)}
-@keyframes scan-flicker{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-.title{text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2);margin:28px 0 12px}
-.btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;flex-wrap:wrap}
-.btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
-.btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
-.content{max-width:960px;width:92vw;margin:0 auto 32px}
-.block{border:1px solid var(--border);padding:16px;margin-top:12px}
-footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
-.small{font-size:10px}
-@media (max-width:520px){ .btn{font-size:14px;text-underline-offset:6px} }
+  body {
+    background: black;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    padding: 20px;
+    font-size: 1.2em;
+  }
+  iframe {
+    border: none;
+    width: 100%;
+    height: 90vh;
+  }
+  .home-btn {
+    display: inline-block;
+    margin: 10px;
+    padding: 8px 12px;
+    border: 1px solid white;
+    text-decoration: none;
+    color: white;
+    font-size: 0.8em;
+  }
+  .home-btn:hover {
+    background: white;
+    color: black;
+  }
 </style>
 </head>
 <body>
-<div class="title">Forum</div>
 
-<nav class="btnbar" aria-label="Quick links">
-  <a class="btn" href="index.html">Home</a>
-  <a class="btn" href="about.html">About</a>
-  <a class="btn" href="contact.html">Contact</a>
-  <a class="btn" href="sponsors.html">Sponsors</a>
-  <a class="btn" href="forum.html">Forum</a>
-</nav>
+<header>
+  Forum – The Occult Reference Net  
+  <br>
+  <a class="home-btn" href="index.html">Home</a>
+</header>
 
-<div class="content">
-  <div class="block">
-    <strong>Community Hub</strong><br>
-    Join investigators, librarians, and folklore nerds. Share finds, ask questions, and organize research.<br><br>
-    <a href="#" target="_blank" rel="noopener">Enter the Forum →</a> (replace with your Discord/Discourse/Reddit link)
-  </div>
+<!-- Reddit embed -->
+<iframe src="https://www.reddit.com/r/TheOccultReferenceNet/" loading="lazy"></iframe>
 
-  <div class="block">
-    <strong>Guidelines</strong>
-    <ul>
-      <li>Cite sources. Add dates, locations, and scans when possible.</li>
-      <li>No hate speech, medical misinformation, or political brigading.</li>
-      <li>Be kind. Extraordinary claims need extraordinary evidence.</li>
-    </ul>
-  </div>
-</div>
-
-<footer>
-  <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
-</footer>
-  <script src="cursor.js" defer></script>
 </body>
 </html>
