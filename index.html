@@ -4,13 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
-<!-- Favicon -->
+<!-- Favicon to silence /favicon.ico 404 -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='black'/%3E%3Ccircle cx='32' cy='36' r='16' fill='%23ff69b4'/%3E%3C/svg%3E">
 
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-<!-- FlexSearch (must load before search code) -->
+<!-- FlexSearch (must load before our search code) -->
 <script src="https://cdn.jsdelivr.net/npm/flexsearch@0.7.31/dist/flexsearch.bundle.js"></script>
 
 <style>
@@ -21,11 +21,8 @@
     margin:0; background:var(--bg); color:var(--fg);
     font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
     display:flex; flex-direction:column; overflow-x:hidden; position:relative;
-    cursor:none; /* hide OS cursor; we draw our own */
+    cursor:none; /* hide system cursor; we draw our own */
   }
-  /* Show pointer for text fields so typing feels normal */
-  input, textarea { cursor:text; }
-  button, a { cursor:none; }
 
   /* CRT vibe */
   body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2}
@@ -78,15 +75,24 @@
     border:1px solid #333; background:rgba(0,0,0,.35); color:#fff; cursor:pointer; display:none;
   }
 
-  /* Big white glowing CRT cursor */
+  /* Retro pixel-arrow cursor with CRT glow */
   .crt-cursor{
-    position:fixed; left:0; top:0; width:28px; height:28px; margin-left:-14px; margin-top:-14px;
-    border-radius:50%; pointer-events:none; z-index:10001; mix-blend-mode:screen;
-    background:radial-gradient(circle, rgba(255,255,255,0.95) 0 35%, rgba(255,255,255,0.55) 36% 55%, rgba(255,255,255,0.0) 56% 100%);
-    box-shadow:0 0 12px rgba(255,255,255,0.7), 0 0 38px rgba(255,255,255,0.35);
+    position:fixed; left:0; top:0; width:22px; height:32px; pointer-events:none; z-index:10001;
+    /* pixel arrow shape */
+    clip-path: polygon(0 0, 0 100%, 40% 70%, 70% 100%, 70% 65%, 100% 65%, 100% 35%, 70% 35%, 70% 0);
+    background:#fff;
+    image-rendering: pixelated;
+    filter:
+      drop-shadow(0 0 2px rgba(255,255,255,0.95))
+      drop-shadow(0 0 6px rgba(255,255,255,0.75))
+      drop-shadow(0 0 14px rgba(255,255,255,0.45));
+    transform: translate(-2px,-2px);
     transition: transform .08s ease-out;
   }
-  .crt-cursor.click { transform: scale(0.88); }
+  .crt-cursor.click{ transform: translate(-2px,-2px) scale(0.9); }
+
+  /* Let inputs show I-beam cursor as normal, while our custom arrow still follows */
+  input, textarea { cursor:text; }
 </style>
 </head>
 <body>
@@ -192,15 +198,15 @@
     import { MarchingCubes } from 'https://unpkg.com/three@0.160.0/examples/jsm/objects/MarchingCubes.js';
     import { RoomEnvironment } from 'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
 
-    const IDLE_MS = 45000;  // 45s idle
+    const IDLE_MS = 45000;                   // 45s idle
     const wrap = document.getElementById('gooWrap');
     const hud = document.getElementById('gooHud');
     const closeBtn = document.getElementById('gooClose');
 
-    // --- single declarations (fixes "raf already declared") ---
+    // Single declarations (avoid redeclare errors)
     let hudCtx, W=0, H=0, dpr=1;
     let renderer, scene, camera, cubes, material, envTex;
-    let running = false, raf, idleTimer, tLast = 0;
+    let running = false, raf, idleTimer, tLast = 0, tSpawn = 0;
     let balls = [];
 
     const SIM = {
@@ -268,7 +274,6 @@
       window.addEventListener('resize', ()=>{ if(running) fit(); });
     }
 
-    let tSpawn = 0;
     function spawn(dt){
       tSpawn += dt;
       if (tSpawn < SIM.spawnEvery || balls.length >= SIM.maxBalls) return;
@@ -364,35 +369,27 @@
     window.addEventListener('DOMContentLoaded', arm);
   </script>
 
-  <!-- Big white glowing CRT cursor (no external file) -->
+  <!-- Retro pixel arrow cursor (no external files) -->
   <script>
     (function(){
-      const dot = document.createElement('div');
-      dot.className = 'crt-cursor';
-      document.body.appendChild(dot);
+      const c = document.createElement('div');
+      c.className = 'crt-cursor';
+      document.body.appendChild(c);
 
       let x=window.innerWidth/2, y=window.innerHeight/2, tx=x, ty=y;
       const speed = 0.35; // smoothing
 
-      function move(e){
-        tx = e.clientX; ty = e.clientY;
-      }
+      function move(e){ tx = e.clientX; ty = e.clientY; }
       function loop(){
         x += (tx - x) * speed;
         y += (ty - y) * speed;
-        dot.style.transform = `translate(${x}px,${y}px)`;
+        c.style.transform = `translate(${x}px,${y}px)`;
         requestAnimationFrame(loop);
       }
       window.addEventListener('mousemove', move, {passive:true});
-      window.addEventListener('mousedown', ()=>{ dot.classList.add('click'); });
-      window.addEventListener('mouseup',   ()=>{ dot.classList.remove('click'); });
+      window.addEventListener('mousedown', ()=>{ c.classList.add('click'); });
+      window.addEventListener('mouseup',   ()=>{ c.classList.remove('click'); });
       loop();
-
-      // Make inputs show text cursor while typing
-      document.querySelectorAll('input, textarea').forEach(el=>{
-        el.addEventListener('mouseenter', ()=>{ document.body.style.cursor='text'; });
-        el.addEventListener('mouseleave', ()=>{ document.body.style.cursor='none'; });
-      });
     })();
   </script>
 
