@@ -16,8 +16,7 @@
     font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
     display:flex; flex-direction:column; position:relative; overflow-x:hidden;
   }
-
-  /* CRT look */
+  /* CRT */
   body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2}
   body::before{
     background:
@@ -25,30 +24,25 @@
       repeating-linear-gradient(0deg, rgba(0,255,153,0.08) 0, rgba(0,255,153,0.08) 1px, transparent 2px, transparent 4px);
     mix-blend-mode:screen; animation:scan 6s infinite linear;
   }
-  body::after{box-shadow:inset 0 0 120px rgba(0,255,153,0.12), inset 0 0 280px rgba(0,255,153,0.08)}
+  body::after{box-shadow:inset 0 0 120px rgba(0,255,153,.12), inset 0 0 280px rgba(0,255,153,.08)}
   @keyframes scan{0%{opacity:.22}45%{opacity:.28}50%{opacity:.20}55%{opacity:.28}100%{opacity:.22}}
 
   a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
 
   .title{margin:28px 12px 10px;text-align:center;font-size:clamp(22px,5vw,46px);letter-spacing:2px;text-shadow:0 0 8px rgba(0,255,153,.2)}
-
   .logo-wrap{display:flex;justify-content:center;margin:10px 0 18px}
   .logo{width:min(520px,80vw);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 
-  /* Search */
   .search-wrap{display:flex;justify-content:center;align-items:center;gap:12px;margin:6px auto 18px;padding:0 16px;width:100%}
   .label{font-size:14px}
   .field{display:flex;align-items:stretch;gap:0;border:2px solid var(--fg);background:#000}
-  input[type="search"]{
-    width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font-family:inherit;font-size:12px;
-  }
+  input[type="search"]{width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font-family:inherit;font-size:12px}
   button{background:#000;color:#fff;border:0;width:42px;padding:0;cursor:pointer;border-left:2px solid var(--fg)}
   button:active{transform:translateY(1px)}
   .mag{display:inline-block;width:100%;height:100%;font-size:16px}
   .mag::before{content:"\1F50D";display:block;line-height:42px;text-align:center}
 
-  /* Bottom nav */
   .btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;padding:0 16px;flex-wrap:wrap}
   .btn{color:#fff;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px;letter-spacing:1px;font-size:16px}
   .btn:hover{color:#fff;text-decoration-color:var(--accent);text-shadow:0 0 8px rgba(255,255,255,.35)}
@@ -63,6 +57,23 @@
   .small{font-size:10px}
 
   mark{background:transparent;color:var(--accent);padding:0;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
+
+  /* Slime canvas (drawn at runtime) */
+  #slimeCanvas{
+    position:fixed; inset:0; display:none; z-index:9999; pointer-events:auto;
+  }
+  #slimeClose{
+    position:fixed; top:10px; right:12px; z-index:10000;
+    width:28px; height:28px; line-height:24px; border-radius:50%;
+    border:1px solid #333; background:rgba(0,0,0,.25); color:#fff; cursor:pointer; display:none;
+  }
+
+  @media (max-width:520px){
+    .title{font-size:22px}
+    .label{display:none}
+    .btn{font-size:14px;text-underline-offset:6px}
+    .btnbar{gap:24px}
+  }
 </style>
 </head>
 <body>
@@ -95,13 +106,15 @@
     <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
   </footer>
 
+  <!-- Slime canvas and close button -->
+  <canvas id="slimeCanvas"></canvas>
+  <button id="slimeClose" aria-label="Dismiss slime">×</button>
+
   <!-- Search -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
     let data = [], index, byUrl = new Map();
-
     function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
     function highlight(text, query){
       if(!text || !query) return text || "";
       const terms = [...new Set(query.trim().split(/\s+/).filter(Boolean))];
@@ -109,207 +122,258 @@
       const re = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
       return text.replace(re, "<mark>$1</mark>");
     }
-
     async function load(){
-      try{
-        const r = await fetch("index.json",{cache:"no-store"});
-        data = await r.json();
-      }catch(e){
-        console.warn("index.json missing or invalid; search will be empty.", e);
-        data = [];
-      }
-      byUrl.clear();
-      for(const d of data){ if(d && d.url) byUrl.set(d.url, d); }
-      index = new FlexSearch.Document({
-        document: { id: "url", index: ["title","snippet","author","tags"] },
-        tokenize: "forward"
-      });
-      for(const d of data){ try{ index.add(d); }catch(_){} }
+      try{ const r = await fetch("index.json",{cache:"no-store"}); data = await r.json(); }
+      catch{ data=[]; }
+      byUrl.clear(); for(const d of data){ if(d && d.url) byUrl.set(d.url,d); }
+      index = new FlexSearch.Document({ document:{id:"url", index:["title","snippet","author","tags"]}, tokenize:"forward" });
+      for(const d of data){ try{ index.add(d); }catch{} }
     }
-
     function fallbackSearch(q){
-      const qlc = q.toLowerCase();
-      return data.filter(d =>
-        (d.title||"").toLowerCase().includes(qlc) ||
-        (d.snippet||"").toLowerCase().includes(qlc) ||
-        (d.author||"").toLowerCase().includes(qlc) ||
-        (d.collection||"").toLowerCase().includes(qlc)
-      ).map(d => d.url);
+      const qlc=q.toLowerCase();
+      return data.filter(d => (d.title||"").toLowerCase().includes(qlc) || (d.snippet||"").toLowerCase().includes(qlc) || (d.author||"").toLowerCase().includes(qlc) || (d.collection||"").toLowerCase().includes(qlc)).map(d=>d.url);
     }
-
     async function run(query){
-      const qInput = document.getElementById('q');
-      const q = (query !== undefined ? query : qInput.value).trim();
-      const box = document.getElementById('results');
-      if(!index) await load();
-      if(!q){ box.innerHTML = ""; return; }
-      let results = index.search(q, { enrich:true });
-      let ids = [...new Set(results.flatMap(r => r.result))];
-      if(ids.length === 0){ ids = fallbackSearch(q); }
-      const hits = ids.map(u => byUrl.get(u)).filter(Boolean).slice(0,50);
+      const qInput=document.getElementById('q'); const q=(query!==undefined?query:qInput.value).trim();
+      const box=document.getElementById('results'); if(!index) await load(); if(!q){ box.innerHTML=""; return; }
+      let results=index.search(q,{enrich:true}); let ids=[...new Set(results.flatMap(r=>r.result))]; if(ids.length===0){ ids=fallbackSearch(q); }
+      const hits=ids.map(u=>byUrl.get(u)).filter(Boolean).slice(0,50);
       box.innerHTML = hits.length ? "" : "<div class='card'>No results. Try broader terms.</div>";
       for(const h of hits){
-        const el = document.createElement('div'); el.className = "card";
-        const title = highlight(h.title || h.url, q);
-        const snippet = highlight(h.snippet || "", q);
-        el.innerHTML = `
-          <div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div>
+        const el=document.createElement('div'); el.className="card";
+        const title=highlight(h.title||h.url,q); const snip=highlight(h.snippet||"",q);
+        el.innerHTML=`<div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div>
           <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a>
-          <div class="snippet">${snippet}</div>
+          <div class="snippet">${snip}</div>
           <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
         box.appendChild(el);
       }
     }
-
-    function debounce(fn, delay=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), delay); }; }
-    const runDebounced = debounce(run, 250);
-
-    document.getElementById('go').onclick = () => run();
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const defaultQuery = "Are you the Keymaster?";
-      const qInput = document.getElementById('q');
-      qInput.style.color = "#888";
-      qInput.value = defaultQuery;
-
-      function setDefault(){ qInput.value = defaultQuery; qInput.style.color = "#888"; }
-      function clearDefault(){ if(qInput.value === defaultQuery){ qInput.value = ""; qInput.style.color = "#fff"; } }
-
-      qInput.addEventListener('focus', clearDefault);
-      qInput.addEventListener('blur', () => { if(qInput.value.trim()==="") setDefault(); });
-      qInput.addEventListener('input', () => {
-        if(qInput.value === defaultQuery) return;
-        qInput.style.color = "#fff";
-        if(qInput.value.trim()===""){ document.getElementById('results').innerHTML=""; return; }
-        runDebounced(qInput.value);
-      });
-      qInput.addEventListener('keydown', e => { if(e.key==="Enter"){ e.preventDefault(); run(); } });
-
+    function debounce(fn,delay=250){ let t; return(...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),delay); }; }
+    const runDebounced = debounce(run,250);
+    document.getElementById('go').onclick=()=>run();
+    window.addEventListener('DOMContentLoaded',()=>{
+      const defaultQuery="Are you the Keymaster?"; const q=document.getElementById('q');
+      q.style.color="#888"; q.value=defaultQuery;
+      function setDefault(){ q.value=defaultQuery; q.style.color="#888"; }
+      function clearDefault(){ if(q.value===defaultQuery){ q.value=""; q.style.color="#fff"; } }
+      q.addEventListener('focus',clearDefault);
+      q.addEventListener('blur',()=>{ if(q.value.trim()==="") setDefault(); });
+      q.addEventListener('input',()=>{ if(q.value===defaultQuery) return; q.style.color="#fff"; if(q.value.trim()===""){ document.getElementById('results').innerHTML=""; return; } runDebounced(q.value); });
+      q.addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } });
       run(defaultQuery);
     });
   </script>
 
-  <!-- Ultra-compatible Idle Slime -->
+  <!-- Gooey Slime (canvas + simple physics) -->
   <script>
-    (function(){
-      const IDLE_MS = 45000; // 45s
-      let t, wrap=null, panel=null, btn=null, visible=false;
+  (function(){
+    const IDLE_MS = 45000; // 45s
+    const canvas = document.getElementById('slimeCanvas');
+    const closeBtn = document.getElementById('slimeClose');
+    let ctx, dpr=1, W=0, H=0, running=false, idleTimer;
 
-      function build(){
-        if (wrap) return;
-        wrap = document.createElement('div');
-        wrap.className = 'slime-wrap';
-        wrap.style.position = 'fixed';
-        wrap.style.inset = '0';
-        wrap.style.display = 'none';
-        wrap.style.zIndex = '9999';
-        document.body.appendChild(wrap);
+    // Surface nodes (springy) + droplets
+    let nodes=[], drops=[];
+    const OPT = {
+      nodeSpacing: 22,      // px between nodes
+      depth: 0.38,          // how far the sheet drops (relative to H)
+      stiffness: 0.020,     // spring back to rest
+      damping: 0.15,
+      spread: 0.25,         // neighbors influence
+      gravity: 0.55,        // droplet gravity
+      spawnChance: 0.08,    // chance per frame to create a finger
+      detachChance: 0.012,  // chance a finger becomes a falling glob
+      colorA: 'rgba(255,205,220,0.90)',
+      colorB: 'rgba(255,120,170,0.78)'
+    };
 
-        panel = document.createElement('div');
-        panel.className = 'slime';
-        // START STATE
-        panel.style.position = 'absolute';
-        panel.style.left = '0'; panel.style.right = '0';
-        panel.style.height = '85vh';
-        panel.style.top = '-120vh'; // fully hidden above
-        panel.style.background = 
-          'radial-gradient(120px 40px at 15% 98%, rgba(255,182,193,.90) 30%, rgba(255,182,193,0) 70%),' +
-          'radial-gradient(180px 60px at 55% 99%, rgba(255,192,203,.85) 30%, rgba(255,192,203,0) 70%),' +
-          'radial-gradient(140px 50px at 85% 98%, rgba(255,160,190,.85) 30%, rgba(255,160,190,0) 70%),' +
-          'linear-gradient(to bottom, rgba(255,205,220,.88), rgba(255,170,195,.78) 35%, rgba(255,120,170,.62) 85%)';
-        panel.style.backdropFilter = 'blur(2px)';
-        panel.style.webkitBackdropFilter = 'blur(2px)';
-        panel.style.borderBottomLeftRadius = '18px';
-        panel.style.borderBottomRightRadius = '18px';
-        panel.style.boxShadow = '0 6px 18px rgba(255,105,180,.25)';
-        wrap.appendChild(panel);
+    function fit(){
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+      W = canvas.clientWidth = window.innerWidth;
+      H = canvas.clientHeight = window.innerHeight;
+      canvas.width = Math.round(W*dpr);
+      canvas.height = Math.round(H*dpr);
+      ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      buildNodes();
+    }
 
-        btn = document.createElement('button');
-        btn.className = 'slime-dismiss';
-        btn.setAttribute('aria-label','Dismiss slime');
-        btn.textContent = '×';
-        btn.style.position = 'absolute';
-        btn.style.top = '10px'; btn.style.right = '12px';
-        btn.style.width = '28px'; btn.style.height = '28px';
-        btn.style.lineHeight = '24px';
-        btn.style.borderRadius = '50%';
-        btn.style.border = '1px solid #333';
-        btn.style.background = 'rgba(0,0,0,.25)';
-        btn.style.color = '#fff';
-        btn.style.cursor = 'pointer';
-        wrap.appendChild(btn);
-
-        btn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
-        wrap.addEventListener('click', ()=>{ hide(); arm(); });
-        window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); }});
+    function buildNodes(){
+      const count = Math.ceil(W/OPT.nodeSpacing)+2;
+      nodes = [];
+      const topY = -H*0.85;         // start well above
+      const restY = H*OPT.depth;    // where the sheet settles
+      for(let i=0;i<count;i++){
+        const x = (i-1)*OPT.nodeSpacing;
+        nodes.push({x, y: topY, vy: 0, rest: restY, finger: 0});
       }
+      drops = [];
+    }
 
-      // rAF slide from -120vh → 0 over DURATION ms
-      function animateDown(duration=2800){
-        const startTop = -120; // vh
-        const endTop = 0;
-        let startTime = null;
+    // Create random downward “finger” at a node
+    function excite(){
+      if(Math.random()>OPT.spawnChance) return;
+      const i = (Math.random()*nodes.length)|0;
+      nodes[i].vy += 6 + Math.random()*8;
+      nodes[i].finger = 1 + Math.random()*2; // mark as sticky so it pulls longer
+    }
 
-        function ease(t){ return t<.5 ? 2*t*t : -1+(4-2*t)*t; } // ease-in-out quad
-
-        function step(ts){
-          if(!startTime) startTime = ts;
-          const p = Math.min(1, (ts - startTime)/duration);
-          const y = startTop + (endTop - startTop) * ease(p);
-          panel.style.top = y + 'vh';
-          if (p < 1) { requestAnimationFrame(step); }
-        }
-        requestAnimationFrame(step);
-      }
-
-      function show(){
-        if (visible) return;
-        build();
-        visible = true;
-        wrap.style.display = 'block';
-        // reset start position in case of prior hide
-        panel.style.top = '-120vh';
-        animateDown(2800);
-      }
-
-      function hide(){
-        if (!visible) return;
-        visible = false;
-        // quick slide up
-        const startTop = parseFloat(panel.style.top) || 0;
-        const endTop = -120;
-        const D = 600;
-        let s=null;
-        function step(ts){
-          if(!s) s=ts;
-          const p = Math.min(1,(ts-s)/D);
-          const y = startTop + (endTop-startTop)*p;
-          panel.style.top = y + 'vh';
-          if (p<1){ requestAnimationFrame(step); }
-          else { wrap.style.display = 'none'; }
-        }
-        requestAnimationFrame(step);
-      }
-
-      function arm(){
-        clearTimeout(t);
-        if (visible) hide();
-        t = setTimeout(show, IDLE_MS);
-      }
-
-      // Reset timer on activity
-      ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>{
-        window.addEventListener(ev, arm, {passive:true});
+    // Sometimes detach a glob from a low point
+    function maybeDetach(i){
+      if(nodes[i].y < nodes[i].rest*0.95) return;
+      if(Math.random()>OPT.detachChance) return;
+      drops.push({
+        x: nodes[i].x + (Math.random()*16-8),
+        y: nodes[i].y + 6,
+        r: 8 + Math.random()*20,
+        vy: 2 + Math.random()*3
       });
+      nodes[i].vy -= 4; // recoil
+      nodes[i].finger = 0;
+    }
 
-      // Debug: ?slime=1 OR press "S"
-      if (new URLSearchParams(location.search).get('slime') === '1') {
-        setTimeout(show, 400);
+    function step(){
+      // springs
+      for(let i=0;i<nodes.length;i++){
+        const n = nodes[i];
+        const dist = n.rest - n.y;
+        const acc = dist*OPT.stiffness;
+        n.vy = (n.vy + acc)*(1-OPT.damping);
       }
-      window.addEventListener('keydown', e => { if(e.key.toLowerCase()==='s') show(); });
+      // neighbor spread (ripples)
+      const leftD = new Array(nodes.length).fill(0);
+      const rightD = new Array(nodes.length).fill(0);
+      for(let j=0;j<2;j++){ // 2 iterations smooths nicely
+        for(let i=1;i<nodes.length-1;i++){
+          const n=nodes[i], l=nodes[i-1], r=nodes[i+1];
+          const dl = OPT.spread*(n.y - l.y);
+          const dr = OPT.spread*(n.y - r.y);
+          leftD[i-1] += dl; rightD[i+1] += dr;
+          n.vy -= (dl+dr)*0.04;
+        }
+        for(let i=0;i<nodes.length;i++){
+          nodes[i].y += leftD[i] + rightD[i];
+          leftD[i]=rightD[i]=0;
+        }
+      }
+      // gravity pull to start falling
+      for(const n of nodes){
+        // fingers linger lower, then rebound
+        if(n.finger>0){
+          n.vy += 0.3;
+          n.finger *= 0.985;
+        }else{
+          n.vy += 0.12;
+        }
+        n.y += n.vy;
+        if(n.y > n.rest) n.y = n.rest; // don't go past rest too far
+      }
+      excite();
+      // maybe detach droplets from low random nodes
+      if(Math.random()<0.35){
+        const i = 2 + (Math.random()*(nodes.length-4))|0;
+        maybeDetach(i);
+      }
 
-      window.addEventListener('DOMContentLoaded', arm);
-    })();
+      // update drops
+      for(const d of drops){
+        d.vy += OPT.gravity*0.12;
+        d.y += d.vy;
+      }
+      // cull
+      drops = drops.filter(d => d.y - d.r < H+40);
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+
+      // pink sheet gradient
+      const grad = ctx.createLinearGradient(0,0,0,H*0.9);
+      grad.addColorStop(0, OPT.colorA);
+      grad.addColorStop(1, OPT.colorB);
+      ctx.fillStyle = grad;
+
+      // path from left to right following nodes, then up offscreen
+      ctx.beginPath();
+      ctx.moveTo(nodes[0].x, -H);
+      ctx.lineTo(nodes[0].x, nodes[0].y);
+      for(let i=1;i<nodes.length;i++){
+        const prev = nodes[i-1], curr = nodes[i];
+        const cx = (prev.x + curr.x)/2;
+        const cy = (prev.y + curr.y)/2;
+        ctx.quadraticCurveTo(prev.x, prev.y, cx, cy);
+      }
+      const last = nodes[nodes.length-1];
+      ctx.lineTo(last.x, -H);
+      ctx.closePath();
+      ctx.fill();
+
+      // specular blobs (soft highlights)
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.filter = 'blur(12px)';
+      ctx.fillStyle = 'rgba(255,240,245,.9)';
+      ctx.beginPath();
+      ctx.ellipse(W*0.18, nodes[Math.floor(nodes.length*0.18)].y+24, 90, 22, 0, 0, Math.PI*2);
+      ctx.ellipse(W*0.82, nodes[Math.floor(nodes.length*0.82)].y+28, 110, 28, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // draw falling globs
+      ctx.fillStyle = 'rgba(255,170,195,.95)';
+      for(const d of drops){
+        ctx.beginPath();
+        ctx.ellipse(d.x, d.y, d.r, Math.max(6, d.r*0.7), 0, 0, Math.PI*2);
+        ctx.fill();
+        // tiny glossy dot
+        ctx.fillStyle = 'rgba(255,255,255,.6)';
+        ctx.beginPath();
+        ctx.arc(d.x - d.r*0.3, d.y - d.r*0.3, Math.max(1.5, d.r*0.12), 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,170,195,.95)';
+      }
+
+      // subtle bottom shadow where slime covers content
+      const g2 = ctx.createLinearGradient(0, H*0.58, 0, H*0.62);
+      g2.addColorStop(0,'rgba(0,0,0,0)');
+      g2.addColorStop(1,'rgba(0,0,0,.35)');
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, Math.min(H, Math.max(0, nodes[ Math.floor(nodes.length*0.5) ].y+80)), W, 80);
+    }
+
+    let raf;
+    function loop(){
+      if(!running) return;
+      step(); draw();
+      raf = requestAnimationFrame(loop);
+    }
+
+    function show(){
+      if(running) return;
+      fit(); canvas.style.display='block'; closeBtn.style.display='block';
+      running=true; loop();
+    }
+    function hide(){
+      running=false; cancelAnimationFrame(raf);
+      canvas.style.display='none'; closeBtn.style.display='none';
+    }
+    function arm(){
+      clearTimeout(idleTimer);
+      if(running) hide();
+      idleTimer = setTimeout(show, IDLE_MS);
+    }
+
+    window.addEventListener('resize', ()=>{ if(!running) return; fit(); });
+    ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>window.addEventListener(ev, arm, {passive:true}));
+    canvas.addEventListener('click', ()=>{ hide(); arm(); });
+    closeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { hide(); arm(); } if(e.key.toLowerCase()==='s'){ show(); }});
+
+    // Instant test: ?slime=1
+    if(new URLSearchParams(location.search).get('slime')==='1'){ setTimeout(show, 300); }
+    window.addEventListener('DOMContentLoaded', arm);
+  })();
   </script>
 
   <!-- Optional: animated CRT cursor -->
