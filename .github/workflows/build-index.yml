@@ -1,30 +1,57 @@
-name: Build index
+name: Build search index
+
 on:
+  workflow_dispatch: {}
   schedule:
-    - cron: "30 2 * * *"   # nightly 02:30 UTC
-  workflow_dispatch:
+    - cron: "17 6 * * 1"  # every Monday 06:17 UTC
+
+permissions:
+  contents: write
 
 jobs:
-  crawl:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # allow the workflow to push index.json back to the repo
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set Pages dir
+        id: pagesdir
+        run: |
+          # Set PAGES_DIR to match your GitHub Pages source
+          # If your Pages source is /docs, leave DOCS. If it's root, set empty.
+          echo "PAGES_DIR=docs" >> $GITHUB_ENV
+          # If your Pages source is root, uncomment the next line and comment the docs line
+          # echo "PAGES_DIR=" >> $GITHUB_ENV
+          echo "Using PAGES_DIR=${{ env.PAGES_DIR }}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - run: pip install requests beautifulsoup4
-
-      # This script should write ./index.json (at repo root)
-      - run: python crawler/crawler_rich.py
-
-      - name: Commit index.json
+      - name: Install deps
         run: |
-          git config user.name "Index Bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add index.json
-          git commit -m "Update index.json" || echo "No changes"
-          git push
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml
+
+      - name: Build index.json
+        env:
+          PAGES_DIR: ${{ env.PAGES_DIR }}
+        run: |
+          python crawler/build_index.py
+          test -f "${{ env.PAGES_DIR }}"/index.json || (echo "index.json not created" && exit 1)
+          echo "index.json size:" && wc -c "${{ env.PAGES_DIR }}"/index.json || true
+          head -n 20 "${{ env.PAGES_DIR }}"/index.json || true
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name  "occult-ref-bot"
+          git config user.email "occult-ref-bot@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update search index.json"
+            git push
+          fi
