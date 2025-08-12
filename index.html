@@ -4,6 +4,9 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Occult Reference Net</title>
 
+<!-- Favicon to avoid /favicon.ico 404 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='black'/%3E%3Ctext x='50%25' y='58%25' font-size='44' text-anchor='middle' fill='%23ff69b4'%3E%E2%97%8F%3C/text%3E%3C/svg%3E">
+
 <!-- Font + your shared CSS (keep if you have it) -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -114,18 +117,68 @@
   <!-- Search logic -->
   <script>
     let data=[], index, byUrl=new Map();
-    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-    function highlight(text,query){ if(!text||!query) return text||""; const terms=[...new Set(query.trim().split(/\s+/).filter(Boolean))]; if(!terms.length) return text; const re=new RegExp("("+terms.map(escapeRegExp).join("|")+")","ig"); return text.replace(re,"<mark>$1</mark>"); }
-    async function load(){ try{ const r=await fetch("index.json",{cache:"no-store"}); data=await r.json(); }catch{ data=[]; } byUrl.clear(); for(const d of data){ if(d&&d.url) byUrl.set(d.url,d); } index=new FlexSearch.Document({document:{id:"url",index:["title","snippet","author","tags"]},tokenize:"forward"}); for(const d of data){ try{ index.add(d);}catch{} } }
-    function fallbackSearch(q){ const ql=q.toLowerCase(); return data.filter(d=> (d.title||"").toLowerCase().includes(ql)||(d.snippet||"").toLowerCase().includes(ql)||(d.author||"").toLowerCase().includes(ql)||(d.collection||"").toLowerCase().includes(ql)).map(d=>d.url); }
-    async function run(qArg){ const qEl=document.getElementById('q'); const q=(qArg!==undefined?qArg:qEl.value).trim(); const box=document.getElementById('results'); if(!index) await load(); if(!q){ box.innerHTML=""; return; } let res=index.search(q,{enrich:true}); let ids=[...new Set(res.flatMap(r=>r.result))]; if(ids.length===0){ ids=fallbackSearch(q); } const hits=ids.map(u=>byUrl.get(u)).filter(Boolean).slice(0,50); box.innerHTML=hits.length?"":"<div class='card'>No results. Try broader terms.</div>"; for(const h of hits){ const el=document.createElement('div'); el.className="card"; const title=highlight(h.title||h.url,q); const snip=highlight(h.snippet||"",q); el.innerHTML=`<div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div><a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a><div class="snippet">${snip}</div><div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`; box.appendChild(el); } }
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&'); }
+    function highlight(text,query){
+      if(!text||!query) return text||"";
+      const terms=[...new Set(query.trim().split(/\\s+/).filter(Boolean))];
+      if(!terms.length) return text;
+      const re=new RegExp("("+terms.map(escapeRegExp).join("|")+")","ig");
+      return text.replace(re,"<mark>$1</mark>");
+    }
+    async function load(){
+      try{ const r=await fetch("index.json",{cache:"no-store"}); data=await r.json(); }
+      catch{ data=[]; }
+      byUrl.clear(); for(const d of data){ if(d&&d.url) byUrl.set(d.url,d); }
+      index=new FlexSearch.Document({document:{id:"url",index:["title","snippet","author","tags"]},tokenize:"forward"});
+      for(const d of data){ try{ index.add(d);}catch{} }
+    }
+    function fallbackSearch(q){
+      const ql=q.toLowerCase();
+      return data.filter(d=>
+        (d.title||"").toLowerCase().includes(ql)||
+        (d.snippet||"").toLowerCase().includes(ql)||
+        (d.author||"").toLowerCase().includes(ql)||
+        (d.collection||"").toLowerCase().includes(ql)
+      ).map(d=>d.url);
+    }
+    async function run(qArg){
+      const qEl=document.getElementById('q');
+      const q=(qArg!==undefined?qArg:qEl.value).trim();
+      const box=document.getElementById('results');
+      if(!index) await load();
+      if(!q){ box.innerHTML=""; return; }
+      let res=index.search(q,{enrich:true});
+      let ids=[...new Set(res.flatMap(r=>r.result))];
+      if(ids.length===0){ ids=fallbackSearch(q); }
+      const hits=ids.map(u=>byUrl.get(u)).filter(Boolean).slice(0,50);
+      box.innerHTML=hits.length?"":"<div class='card'>No results. Try broader terms.</div>";
+      for(const h of hits){
+        const el=document.createElement('div'); el.className="card";
+        const title=highlight(h.title||h.url,q); const snip=highlight(h.snippet||"",q);
+        el.innerHTML=\`<div class="src">\${h.collection||h.source||""} \${h.type?\`· \${h.type}\`:""}</div>
+          <a class="titlelink" href="\${h.url}" target="_blank" rel="noopener">\${title}</a>
+          <div class="snippet">\${snip}</div>
+          <div class="src">\${h.author?\`author: \${h.author} · \`:""}\${h.year?\`year: \${h.year}\`:""}</div>\`;
+        box.appendChild(el);
+      }
+    }
     function debounce(fn,d=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),d); }; }
     const runDebounced=debounce(run,250);
     document.getElementById('go').onclick=()=>run();
-    window.addEventListener('DOMContentLoaded',()=>{ const def="Are you the Keymaster?"; const q=document.getElementById('q'); q.style.color="#888"; q.value=def; function setDef(){ q.value=def; q.style.color="#888"; } function clr(){ if(q.value===def){ q.value=""; q.style.color="#fff"; } } q.addEventListener('focus',clr); q.addEventListener('blur',()=>{ if(q.value.trim()==="") setDef(); }); q.addEventListener('input',()=>{ if(q.value===def) return; q.style.color="#fff"; if(q.value.trim()===""){ document.getElementById('results').innerHTML=""; return; } runDebounced(q.value); }); q.addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } }); run(def); });
+    window.addEventListener('DOMContentLoaded',()=>{
+      const def="Are you the Keymaster?"; const q=document.getElementById('q');
+      q.style.color="#888"; q.value=def;
+      function setDef(){ q.value=def; q.style.color="#888"; }
+      function clr(){ if(q.value===def){ q.value=""; q.style.color="#fff"; } }
+      q.addEventListener('focus',clr);
+      q.addEventListener('blur',()=>{ if(q.value.trim()==="") setDef(); });
+      q.addEventListener('input',()=>{ if(q.value===def) return; q.style.color="#fff"; if(q.value.trim()===""){ document.getElementById('results').innerHTML=""; return; } runDebounced(q.value); });
+      q.addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } });
+      run(def);
+    });
   </script>
 
-  <!-- Photoreal slime (Three.js via CDN URLs) -->
+  <!-- Photoreal slime (Three.js via explicit CDN URLs) -->
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
     import { MarchingCubes } from 'https://unpkg.com/three@0.160.0/examples/jsm/objects/MarchingCubes.js';
@@ -246,28 +299,29 @@
     }
 
     function drawHud(){
-      hudCtx.clearRect(0,0,W,H);
+      const hudCtxLocal = hudCtx; // local ref for speed
+      hudCtxLocal.clearRect(0,0,W,H);
       // soft highlights
-      hudCtx.globalCompositeOperation='lighter';
-      hudCtx.globalAlpha = 0.24;
-      const g1 = hudCtx.createRadialGradient(W*0.22, 90, 10, W*0.22, 90, 180);
+      hudCtxLocal.globalCompositeOperation='lighter';
+      hudCtxLocal.globalAlpha = 0.24;
+      const g1 = hudCtxLocal.createRadialGradient(W*0.22, 90, 10, W*0.22, 90, 180);
       g1.addColorStop(0,'rgba(255,240,245,0.9)');
       g1.addColorStop(1,'rgba(255,240,245,0)');
-      hudCtx.fillStyle=g1; hudCtx.beginPath(); hudCtx.arc(W*0.22,90,160,0,Math.PI*2); hudCtx.fill();
+      hudCtxLocal.fillStyle=g1; hudCtxLocal.beginPath(); hudCtxLocal.arc(W*0.22,90,160,0,Math.PI*2); hudCtxLocal.fill();
 
-      const g2 = hudCtx.createRadialGradient(W*0.78, 110, 10, W*0.78, 110, 220);
+      const g2 = hudCtxLocal.createRadialGradient(W*0.78, 110, 10, W*0.78, 110, 220);
       g2.addColorStop(0,'rgba(255,232,240,0.9)');
       g2.addColorStop(1,'rgba(255,232,240,0)');
-      hudCtx.fillStyle=g2; hudCtx.beginPath(); hudCtx.arc(W*0.78,110,190,0,Math.PI*2); hudCtx.fill();
+      hudCtxLocal.fillStyle=g2; hudCtxLocal.beginPath(); hudCtxLocal.arc(W*0.78,110,190,0,Math.PI*2); hudCtxLocal.fill();
 
-      hudCtx.globalAlpha=1; hudCtx.globalCompositeOperation='source-over';
+      hudCtxLocal.globalAlpha=1; hudCtxLocal.globalCompositeOperation='source-over';
 
       // shadow band where goo overlaps content
       const y = Math.min(H, balls.reduce((m,b)=>Math.max(m,b.y), 0)+30);
-      const gl = hudCtx.createLinearGradient(0,y,0,y+80);
+      const gl = hudCtxLocal.createLinearGradient(0,y,0,y+80);
       gl.addColorStop(0,'rgba(0,0,0,0)');
       gl.addColorStop(1,'rgba(0,0,0,.35)');
-      hudCtx.fillStyle=gl; hudCtx.fillRect(0,y,W,80);
+      hudCtxLocal.fillStyle=gl; hudCtxLocal.fillRect(0,y,W,80);
     }
 
     function loop(ts){
