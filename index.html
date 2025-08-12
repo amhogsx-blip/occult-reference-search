@@ -16,12 +16,12 @@
     font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
     display:flex; flex-direction:column; position:relative; overflow-x:hidden;
   }
-  /* CRT */
+  /* CRT vibe */
   body::before, body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2}
   body::before{
     background:
-      linear-gradient(rgba(0,255,153,0.06), rgba(0,255,153,0.06)) 0 0/100% 100%,
-      repeating-linear-gradient(0deg, rgba(0,255,153,0.08) 0, rgba(0,255,153,0.08) 1px, transparent 2px, transparent 4px);
+      linear-gradient(rgba(0,255,153,.06), rgba(0,255,153,.06)) 0 0/100% 100%,
+      repeating-linear-gradient(0deg, rgba(0,255,153,.08) 0, rgba(0,255,153,.08) 1px, transparent 2px, transparent 4px);
     mix-blend-mode:screen; animation:scan 6s infinite linear;
   }
   body::after{box-shadow:inset 0 0 120px rgba(0,255,153,.12), inset 0 0 280px rgba(0,255,153,.08)}
@@ -37,10 +37,8 @@
   .search-wrap{display:flex;justify-content:center;align-items:center;gap:12px;margin:6px auto 18px;padding:0 16px;width:100%}
   .label{font-size:14px}
   .field{display:flex;align-items:stretch;gap:0;border:2px solid var(--fg);background:#000}
-  input[type="search"]{width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font-family:inherit;font-size:12px}
+  input[type="search"]{width:min(560px,70vw);padding:12px 14px;border:0;outline:none;background:#000;color:#fff;font:inherit}
   button{background:#000;color:#fff;border:0;width:42px;padding:0;cursor:pointer;border-left:2px solid var(--fg)}
-  button:active{transform:translateY(1px)}
-  .mag{display:inline-block;width:100%;height:100%;font-size:16px}
   .mag::before{content:"\1F50D";display:block;line-height:42px;text-align:center}
 
   .btnbar{display:flex;justify-content:center;gap:min(8vw,80px);margin:14px auto 20px;padding:0 16px;flex-wrap:wrap}
@@ -55,17 +53,16 @@
 
   footer{margin-top:auto;padding:18px 10px;text-align:center;color:var(--muted);border-top:1px solid var(--border);z-index:1}
   .small{font-size:10px}
-
   mark{background:transparent;color:var(--accent);padding:0;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:2px}
 
-  /* Slime canvas (drawn at runtime) */
-  #slimeCanvas{
-    position:fixed; inset:0; display:none; z-index:9999; pointer-events:auto;
-  }
-  #slimeClose{
-    position:fixed; top:10px; right:12px; z-index:10000;
+  /* Photoreal slime overlay */
+  #gooWrap{position:fixed;inset:0;z-index:9999;display:none}
+  #goo, #gooHud{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #gooHud{pointer-events:none}
+  #gooClose{
+    position:absolute; top:10px; right:12px; z-index:10000;
     width:28px; height:28px; line-height:24px; border-radius:50%;
-    border:1px solid #333; background:rgba(0,0,0,.25); color:#fff; cursor:pointer; display:none;
+    border:1px solid #333; background:rgba(0,0,0,.35); color:#fff; cursor:pointer; display:none;
   }
 
   @media (max-width:520px){
@@ -79,10 +76,7 @@
 <body>
 
   <div class="title">The Occult Reference Net</div>
-
-  <div class="logo-wrap">
-    <img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo">
-  </div>
+  <div class="logo-wrap"><img src="GB-Logo_TORN.png" alt="Ghostbusters pixel logo" class="logo"></div>
 
   <div class="search-wrap">
     <div class="label">Search:</div>
@@ -102,261 +96,225 @@
 
   <div id="results" class="results"></div>
 
-  <footer>
-    <div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div>
-  </footer>
+  <footer><div class="small">Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</div></footer>
 
-  <!-- Slime canvas and close button -->
-  <canvas id="slimeCanvas"></canvas>
-  <button id="slimeClose" aria-label="Dismiss slime">×</button>
+  <!-- Photoreal slime overlay (WebGL + HUD) -->
+  <div id="gooWrap" aria-hidden="true">
+    <canvas id="goo"></canvas>
+    <canvas id="gooHud"></canvas>
+    <button id="gooClose" aria-label="Dismiss slime">×</button>
+  </div>
 
   <!-- Search -->
   <script src="https://unpkg.com/flexsearch/dist/flexsearch.bundle.js"></script>
   <script>
-    let data = [], index, byUrl = new Map();
-    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-    function highlight(text, query){
-      if(!text || !query) return text || "";
-      const terms = [...new Set(query.trim().split(/\s+/).filter(Boolean))];
-      if(!terms.length) return text;
-      const re = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "ig");
-      return text.replace(re, "<mark>$1</mark>");
-    }
-    async function load(){
-      try{ const r = await fetch("index.json",{cache:"no-store"}); data = await r.json(); }
-      catch{ data=[]; }
-      byUrl.clear(); for(const d of data){ if(d && d.url) byUrl.set(d.url,d); }
-      index = new FlexSearch.Document({ document:{id:"url", index:["title","snippet","author","tags"]}, tokenize:"forward" });
-      for(const d of data){ try{ index.add(d); }catch{} }
-    }
-    function fallbackSearch(q){
-      const qlc=q.toLowerCase();
-      return data.filter(d => (d.title||"").toLowerCase().includes(qlc) || (d.snippet||"").toLowerCase().includes(qlc) || (d.author||"").toLowerCase().includes(qlc) || (d.collection||"").toLowerCase().includes(qlc)).map(d=>d.url);
-    }
-    async function run(query){
-      const qInput=document.getElementById('q'); const q=(query!==undefined?query:qInput.value).trim();
-      const box=document.getElementById('results'); if(!index) await load(); if(!q){ box.innerHTML=""; return; }
-      let results=index.search(q,{enrich:true}); let ids=[...new Set(results.flatMap(r=>r.result))]; if(ids.length===0){ ids=fallbackSearch(q); }
-      const hits=ids.map(u=>byUrl.get(u)).filter(Boolean).slice(0,50);
-      box.innerHTML = hits.length ? "" : "<div class='card'>No results. Try broader terms.</div>";
-      for(const h of hits){
-        const el=document.createElement('div'); el.className="card";
-        const title=highlight(h.title||h.url,q); const snip=highlight(h.snippet||"",q);
-        el.innerHTML=`<div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div>
-          <a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a>
-          <div class="snippet">${snip}</div>
-          <div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`;
-        box.appendChild(el);
-      }
-    }
-    function debounce(fn,delay=250){ let t; return(...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),delay); }; }
-    const runDebounced = debounce(run,250);
+    let data=[], index, byUrl=new Map();
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function highlight(text,query){ if(!text||!query) return text||""; const terms=[...new Set(query.trim().split(/\s+/).filter(Boolean))]; if(!terms.length) return text; const re=new RegExp("("+terms.map(escapeRegExp).join("|")+")","ig"); return text.replace(re,"<mark>$1</mark>"); }
+    async function load(){ try{ const r=await fetch("index.json",{cache:"no-store"}); data=await r.json(); }catch{ data=[]; } byUrl.clear(); for(const d of data){ if(d&&d.url) byUrl.set(d.url,d); } index=new FlexSearch.Document({document:{id:"url",index:["title","snippet","author","tags"]},tokenize:"forward"}); for(const d of data){ try{ index.add(d);}catch{} } }
+    function fallbackSearch(q){ const ql=q.toLowerCase(); return data.filter(d=> (d.title||"").toLowerCase().includes(ql)||(d.snippet||"").toLowerCase().includes(ql)||(d.author||"").toLowerCase().includes(ql)||(d.collection||"").toLowerCase().includes(ql)).map(d=>d.url); }
+    async function run(qArg){ const qEl=document.getElementById('q'); const q=(qArg!==undefined?qArg:qEl.value).trim(); const box=document.getElementById('results'); if(!index) await load(); if(!q){ box.innerHTML=""; return; } let res=index.search(q,{enrich:true}); let ids=[...new Set(res.flatMap(r=>r.result))]; if(ids.length===0){ ids=fallbackSearch(q); } const hits=ids.map(u=>byUrl.get(u)).filter(Boolean).slice(0,50); box.innerHTML=hits.length?"":"<div class='card'>No results. Try broader terms.</div>"; for(const h of hits){ const el=document.createElement('div'); el.className="card"; const title=highlight(h.title||h.url,q); const snip=highlight(h.snippet||"",q); el.innerHTML=`<div class="src">${h.collection||h.source||""} ${h.type?`· ${h.type}`:""}</div><a class="titlelink" href="${h.url}" target="_blank" rel="noopener">${title}</a><div class="snippet">${snip}</div><div class="src">${h.author?`author: ${h.author} · `:""}${h.year?`year: ${h.year}`:""}</div>`; box.appendChild(el); } }
+    function debounce(fn,d=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),d); }; }
+    const runDebounced=debounce(run,250);
     document.getElementById('go').onclick=()=>run();
-    window.addEventListener('DOMContentLoaded',()=>{
-      const defaultQuery="Are you the Keymaster?"; const q=document.getElementById('q');
-      q.style.color="#888"; q.value=defaultQuery;
-      function setDefault(){ q.value=defaultQuery; q.style.color="#888"; }
-      function clearDefault(){ if(q.value===defaultQuery){ q.value=""; q.style.color="#fff"; } }
-      q.addEventListener('focus',clearDefault);
-      q.addEventListener('blur',()=>{ if(q.value.trim()==="") setDefault(); });
-      q.addEventListener('input',()=>{ if(q.value===defaultQuery) return; q.style.color="#fff"; if(q.value.trim()===""){ document.getElementById('results').innerHTML=""; return; } runDebounced(q.value); });
-      q.addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } });
-      run(defaultQuery);
-    });
+    window.addEventListener('DOMContentLoaded',()=>{ const def="Are you the Keymaster?"; const q=document.getElementById('q'); q.style.color="#888"; q.value=def; function setDef(){ q.value=def; q.style.color="#888"; } function clr(){ if(q.value===def){ q.value=""; q.style.color="#fff"; } } q.addEventListener('focus',clr); q.addEventListener('blur',()=>{ if(q.value.trim()==="") setDef(); }); q.addEventListener('input',()=>{ if(q.value===def) return; q.style.color="#fff"; if(q.value.trim()===""){ document.getElementById('results').innerHTML=""; return; } runDebounced(q.value); }); q.addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } }); run(def); });
   </script>
 
-  <!-- Gooey Slime (canvas + simple physics) -->
-  <script>
-  (function(){
-    const IDLE_MS = 45000; // 45s
-    const canvas = document.getElementById('slimeCanvas');
-    const closeBtn = document.getElementById('slimeClose');
-    let ctx, dpr=1, W=0, H=0, running=false, idleTimer;
+  <!-- Photoreal slime via Three.js + Bloom + RGB shift -->
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { RGBELoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/RGBELoader.js';
+    import { MarchingCubes } from 'https://unpkg.com/three@0.160.0/examples/jsm/objects/MarchingCubes.js';
+    import { EffectComposer } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+    import { ShaderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
+    import { RGBShiftShader } from 'https://unpkg.com/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js';
 
-    // Surface nodes (springy) + droplets
-    let nodes=[], drops=[];
-    const OPT = {
-      nodeSpacing: 22,      // px between nodes
-      depth: 0.38,          // how far the sheet drops (relative to H)
-      stiffness: 0.020,     // spring back to rest
-      damping: 0.15,
-      spread: 0.25,         // neighbors influence
-      gravity: 0.55,        // droplet gravity
-      spawnChance: 0.08,    // chance per frame to create a finger
-      detachChance: 0.012,  // chance a finger becomes a falling glob
-      colorA: 'rgba(255,205,220,0.90)',
-      colorB: 'rgba(255,120,170,0.78)'
+    const IDLE_MS = 45000;  // 45s idle
+    const wrap = document.getElementById('gooWrap');
+    const hud = document.getElementById('gooHud');
+    const closeBtn = document.getElementById('gooClose');
+    let hudCtx, W=0, H=0, dpr=1;
+
+    let renderer, scene, camera, cubes, material, pmrem, envMap;
+    let composer, bloomPass, rgbShiftPass;
+    let running = false, raf, idleTimer;
+    let balls = [];
+
+    const SIM = {
+      resolution: 70,           // marching-cubes grid (↑ for more detail)
+      maxBalls: 32,
+      gravity: 18,
+      viscosity: 0.985,
+      spawnEvery: 0.20,
+      spawnJitterX: 0.28,
+      radiusBase: 0.7,
+      radiusVar: 0.6,
+      surface: 2.5
     };
 
     function fit(){
       dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
-      W = canvas.clientWidth = window.innerWidth;
-      H = canvas.clientHeight = window.innerHeight;
-      canvas.width = Math.round(W*dpr);
-      canvas.height = Math.round(H*dpr);
-      ctx = canvas.getContext('2d');
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      buildNodes();
+      W = wrap.clientWidth = window.innerWidth;
+      H = wrap.clientHeight = window.innerHeight;
+
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(W, H, false);
+
+      composer.setSize(W, H);
+
+      hud.width = Math.round(W*dpr); hud.height = Math.round(H*dpr);
+      hud.style.width = W+'px'; hud.style.height = H+'px';
+      hudCtx.setTransform(dpr,0,0,dpr,0,0);
+
+      camera.left = -W/2; camera.right = W/2;
+      camera.top = H/2; camera.bottom = -H/2;
+      camera.updateProjectionMatrix();
+
+      cubes.position.set(-W/2, -H/2, 0);
+      cubes.scale.set(W, H, Math.max(W,H));
     }
 
-    function buildNodes(){
-      const count = Math.ceil(W/OPT.nodeSpacing)+2;
-      nodes = [];
-      const topY = -H*0.85;         // start well above
-      const restY = H*OPT.depth;    // where the sheet settles
-      for(let i=0;i<count;i++){
-        const x = (i-1)*OPT.nodeSpacing;
-        nodes.push({x, y: topY, vy: 0, rest: restY, finger: 0});
-      }
-      drops = [];
-    }
+    async function init(){
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('goo'), antialias: true, alpha: true });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    // Create random downward “finger” at a node
-    function excite(){
-      if(Math.random()>OPT.spawnChance) return;
-      const i = (Math.random()*nodes.length)|0;
-      nodes[i].vy += 6 + Math.random()*8;
-      nodes[i].finger = 1 + Math.random()*2; // mark as sticky so it pulls longer
-    }
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1,1,1,-1, -1000, 1000);
+      camera.position.set(0,0,10);
 
-    // Sometimes detach a glob from a low point
-    function maybeDetach(i){
-      if(nodes[i].y < nodes[i].rest*0.95) return;
-      if(Math.random()>OPT.detachChance) return;
-      drops.push({
-        x: nodes[i].x + (Math.random()*16-8),
-        y: nodes[i].y + 6,
-        r: 8 + Math.random()*20,
-        vy: 2 + Math.random()*3
+      pmrem = new THREE.PMREMGenerator(renderer);
+      envMap = await new Promise(res=>{
+        new RGBELoader()
+          .setDataType(THREE.FloatType)
+          .load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            (hdr)=> res(pmrem.fromEquirectangular(hdr).texture));
       });
-      nodes[i].vy -= 4; // recoil
-      nodes[i].finger = 0;
+
+      material = new THREE.MeshPhysicalMaterial({
+        metalness: 0.0,
+        roughness: 0.08,
+        transmission: 1.0,
+        thickness: 2.6,
+        ior: 1.38,
+        attenuationColor: new THREE.Color(1.0, 0.48, 0.62),
+        attenuationDistance: 0.9,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.18,
+        envMap, envMapIntensity: 1.35
+      });
+
+      cubes = new MarchingCubes(SIM.resolution, material, true, true, SIM.surface);
+      scene.add(cubes);
+
+      // POST: Bloom + subtle RGB bleed
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+
+      // strong, soft bloom (milky)
+      bloomPass = new UnrealBloomPass(new THREE.Vector2(W, H), 1.2, 0.9, 0.2);
+      // strength, radius, threshold — tune to taste
+      composer.addPass(bloomPass);
+
+      // tiny RGB shift for color bleed / aberration at edges
+      rgbShiftPass = new ShaderPass(RGBShiftShader);
+      rgbShiftPass.uniforms['amount'].value = 0.0015; // very subtle
+      composer.addPass(rgbShiftPass);
+
+      hudCtx = hud.getContext('2d');
+
+      fit();
+      window.addEventListener('resize', ()=>{ if(running) fit(); });
     }
 
-    function step(){
-      // springs
-      for(let i=0;i<nodes.length;i++){
-        const n = nodes[i];
-        const dist = n.rest - n.y;
-        const acc = dist*OPT.stiffness;
-        n.vy = (n.vy + acc)*(1-OPT.damping);
-      }
-      // neighbor spread (ripples)
-      const leftD = new Array(nodes.length).fill(0);
-      const rightD = new Array(nodes.length).fill(0);
-      for(let j=0;j<2;j++){ // 2 iterations smooths nicely
-        for(let i=1;i<nodes.length-1;i++){
-          const n=nodes[i], l=nodes[i-1], r=nodes[i+1];
-          const dl = OPT.spread*(n.y - l.y);
-          const dr = OPT.spread*(n.y - r.y);
-          leftD[i-1] += dl; rightD[i+1] += dr;
-          n.vy -= (dl+dr)*0.04;
-        }
-        for(let i=0;i<nodes.length;i++){
-          nodes[i].y += leftD[i] + rightD[i];
-          leftD[i]=rightD[i]=0;
-        }
-      }
-      // gravity pull to start falling
-      for(const n of nodes){
-        // fingers linger lower, then rebound
-        if(n.finger>0){
-          n.vy += 0.3;
-          n.finger *= 0.985;
-        }else{
-          n.vy += 0.12;
-        }
-        n.y += n.vy;
-        if(n.y > n.rest) n.y = n.rest; // don't go past rest too far
-      }
-      excite();
-      // maybe detach droplets from low random nodes
-      if(Math.random()<0.35){
-        const i = 2 + (Math.random()*(nodes.length-4))|0;
-        maybeDetach(i);
-      }
-
-      // update drops
-      for(const d of drops){
-        d.vy += OPT.gravity*0.12;
-        d.y += d.vy;
-      }
-      // cull
-      drops = drops.filter(d => d.y - d.r < H+40);
+    let tLast = 0, tSpawn = 0;
+    function spawn(dt){
+      tSpawn += dt;
+      if (tSpawn < SIM.spawnEvery || balls.length >= SIM.maxBalls) return;
+      tSpawn = 0;
+      const rx = (Math.random()*2-1) * SIM.spawnJitterX * W/2;
+      balls.push({
+        x: W/2 + rx,
+        y: -40,
+        z: (Math.random()*2-1) * 0.25,
+        r: SIM.radiusBase + Math.random()*SIM.radiusVar,
+        vy: 0
+      });
     }
 
-    function draw(){
-      ctx.clearRect(0,0,W,H);
-
-      // pink sheet gradient
-      const grad = ctx.createLinearGradient(0,0,0,H*0.9);
-      grad.addColorStop(0, OPT.colorA);
-      grad.addColorStop(1, OPT.colorB);
-      ctx.fillStyle = grad;
-
-      // path from left to right following nodes, then up offscreen
-      ctx.beginPath();
-      ctx.moveTo(nodes[0].x, -H);
-      ctx.lineTo(nodes[0].x, nodes[0].y);
-      for(let i=1;i<nodes.length;i++){
-        const prev = nodes[i-1], curr = nodes[i];
-        const cx = (prev.x + curr.x)/2;
-        const cy = (prev.y + curr.y)/2;
-        ctx.quadraticCurveTo(prev.x, prev.y, cx, cy);
+    function step(dt){
+      for (const b of balls){
+        b.vy += SIM.gravity*dt;
+        b.vy *= SIM.viscosity;
+        b.y += b.vy;
       }
-      const last = nodes[nodes.length-1];
-      ctx.lineTo(last.x, -H);
-      ctx.closePath();
-      ctx.fill();
+      balls = balls.filter(b => b.y < H + 100);
 
-      // specular blobs (soft highlights)
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.filter = 'blur(12px)';
-      ctx.fillStyle = 'rgba(255,240,245,.9)';
-      ctx.beginPath();
-      ctx.ellipse(W*0.18, nodes[Math.floor(nodes.length*0.18)].y+24, 90, 22, 0, 0, Math.PI*2);
-      ctx.ellipse(W*0.82, nodes[Math.floor(nodes.length*0.82)].y+28, 110, 28, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-
-      // draw falling globs
-      ctx.fillStyle = 'rgba(255,170,195,.95)';
-      for(const d of drops){
-        ctx.beginPath();
-        ctx.ellipse(d.x, d.y, d.r, Math.max(6, d.r*0.7), 0, 0, Math.PI*2);
-        ctx.fill();
-        // tiny glossy dot
-        ctx.fillStyle = 'rgba(255,255,255,.6)';
-        ctx.beginPath();
-        ctx.arc(d.x - d.r*0.3, d.y - d.r*0.3, Math.max(1.5, d.r*0.12), 0, Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255,170,195,.95)';
+      cubes.reset();
+      for (const b of balls){
+        cubes.addBall(b.x/W, b.y/H, 0.5 + b.z*0.1, b.r, 1);
       }
-
-      // subtle bottom shadow where slime covers content
-      const g2 = ctx.createLinearGradient(0, H*0.58, 0, H*0.62);
-      g2.addColorStop(0,'rgba(0,0,0,0)');
-      g2.addColorStop(1,'rgba(0,0,0,.35)');
-      ctx.fillStyle = g2;
-      ctx.fillRect(0, Math.min(H, Math.max(0, nodes[ Math.floor(nodes.length*0.5) ].y+80)), W, 80);
+      // top sheet anchors (feel like it's pouring from a lip)
+      for (let i=0;i<12;i++){
+        cubes.addBall(i/11, -0.03, 0.5, 0.42, 0.8);
+      }
     }
 
-    let raf;
-    function loop(){
+    function drawHud(){
+      hudCtx.clearRect(0,0,W,H);
+
+      // bright specular highlights (screen-space)
+      hudCtx.globalCompositeOperation='lighter';
+      hudCtx.globalAlpha = 0.28;
+      const g1 = hudCtx.createRadialGradient(W*0.22, 90, 10, W*0.22, 90, 180);
+      g1.addColorStop(0,'rgba(255,240,245,0.9)');
+      g1.addColorStop(1,'rgba(255,240,245,0)');
+      hudCtx.fillStyle=g1; hudCtx.beginPath(); hudCtx.arc(W*0.22,90,160,0,Math.PI*2); hudCtx.fill();
+
+      const g2 = hudCtx.createRadialGradient(W*0.78, 110, 10, W*0.78, 110, 220);
+      g2.addColorStop(0,'rgba(255,232,240,0.9)');
+      g2.addColorStop(1,'rgba(255,232,240,0)');
+      hudCtx.fillStyle=g2; hudCtx.beginPath(); hudCtx.arc(W*0.78,110,190,0,Math.PI*2); hudCtx.fill();
+
+      hudCtx.globalAlpha=1;
+      hudCtx.globalCompositeOperation='source-over';
+
+      // shadow band where goo overlaps UI
+      const y = Math.min(H, balls.reduce((m,b)=>Math.max(m,b.y), 0)+30);
+      const gl = hudCtx.createLinearGradient(0,y,0,y+80);
+      gl.addColorStop(0,'rgba(0,0,0,0)'); gl.addColorStop(1,'rgba(0,0,0,.35)');
+      hudCtx.fillStyle=gl; hudCtx.fillRect(0,y,W,80);
+    }
+
+    function loop(ts){
       if(!running) return;
-      step(); draw();
+      if(!tLast) tLast = ts;
+      const dt = Math.min(0.033, (ts - tLast)/1000);
+      tLast = ts;
+
+      spawn(dt);
+      step(dt);
+
+      composer.render();
+      drawHud();
+
       raf = requestAnimationFrame(loop);
     }
 
     function show(){
       if(running) return;
-      fit(); canvas.style.display='block'; closeBtn.style.display='block';
-      running=true; loop();
+      if(!renderer){ init().then(show); return; }
+      wrap.style.display='block';
+      closeBtn.style.display='block';
+      running = true; tLast = 0; balls.length = 0;
+      raf = requestAnimationFrame(loop);
+      wrap.setAttribute('aria-hidden','false');
     }
     function hide(){
-      running=false; cancelAnimationFrame(raf);
-      canvas.style.display='none'; closeBtn.style.display='none';
+      running = false; cancelAnimationFrame(raf);
+      closeBtn.style.display='none'; wrap.style.display='none';
+      wrap.setAttribute('aria-hidden','true');
     }
     function arm(){
       clearTimeout(idleTimer);
@@ -364,19 +322,16 @@
       idleTimer = setTimeout(show, IDLE_MS);
     }
 
-    window.addEventListener('resize', ()=>{ if(!running) return; fit(); });
-    ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>window.addEventListener(ev, arm, {passive:true}));
-    canvas.addEventListener('click', ()=>{ hide(); arm(); });
     closeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
-    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { hide(); arm(); } if(e.key.toLowerCase()==='s'){ show(); }});
+    wrap.addEventListener('click', ()=>{ hide(); arm(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); } if(e.key.toLowerCase()==='s'){ show(); }});
+    ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>window.addEventListener(ev, arm, {passive:true}));
 
-    // Instant test: ?slime=1
     if(new URLSearchParams(location.search).get('slime')==='1'){ setTimeout(show, 300); }
     window.addEventListener('DOMContentLoaded', arm);
-  })();
   </script>
 
-  <!-- Optional: animated CRT cursor -->
+  <!-- Optional: CRT cursor -->
   <script src="cursor.js" defer></script>
 </body>
 </html>
