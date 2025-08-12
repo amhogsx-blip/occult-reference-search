@@ -178,7 +178,7 @@
     document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); }});
   </script>
 
-  <!-- Photoreal slime (Three.js via explicit CDN URLs) -->
+  <!-- Slime effect (Three.js via explicit CDN URLs) -->
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
     import { MarchingCubes } from 'https://unpkg.com/three@0.160.0/examples/jsm/objects/MarchingCubes.js';
@@ -195,15 +195,8 @@
     let balls = [];
 
     const SIM = {
-      resolution: 70,     // ↑ for smoother blobs (costs GPU)
-      maxBalls: 32,
-      gravity: 18,
-      viscosity: 0.985,
-      spawnEvery: 0.22,
-      spawnJitterX: 0.28,
-      radiusBase: 0.7,
-      radiusVar: 0.6,
-      surface: 2.5
+      resolution: 70, maxBalls: 32, gravity: 18, viscosity: 0.985,
+      spawnEvery: 0.22, spawnJitterX: 0.28, radiusBase: 0.7, radiusVar: 0.6, surface: 2.5
     };
 
     function fit(){
@@ -272,12 +265,7 @@
       if (tSpawn < SIM.spawnEvery || balls.length >= SIM.maxBalls) return;
       tSpawn = 0;
       const rx = (Math.random()*2-1) * SIM.spawnJitterX * W/2;
-      balls.push({
-        x: W/2 + rx, y: -40,
-        z: (Math.random()*2-1)*0.25,
-        r: SIM.radiusBase + Math.random()*SIM.radiusVar,
-        vy: 0
-      });
+      balls.push({ x: W/2 + rx, y: -40, z: (Math.random()*2-1)*0.25, r: SIM.radiusBase + Math.random()*SIM.radiusVar, vy: 0 });
     }
 
     function step(dt){
@@ -292,10 +280,7 @@
       for (const b of balls){
         cubes.addBall(b.x/W, b.y/H, 0.5 + b.z*0.1, b.r, 1);
       }
-      // top “lip” anchors so it looks like pouring from above
-      for (let i=0;i<12;i++){
-        cubes.addBall(i/11, -0.03, 0.5, 0.42, 0.8);
-      }
+      for (let i=0;i<12;i++){ cubes.addBall(i/11, -0.03, 0.5, 0.42, 0.8); } // “lip” at the top
     }
 
     function drawHud(){
@@ -325,6 +310,7 @@
       ctx.fillStyle=gl; ctx.fillRect(0,y,W,80);
     }
 
+    let raf;
     function loop(ts){
       if(!running) return;
       if(!tLast) tLast = ts;
@@ -340,18 +326,20 @@
       raf = requestAnimationFrame(loop);
     }
 
+    let running = false, idleTimer, tLast = 0;
     function show(){
       if(running) return;
       if(!renderer){ init().then(show); return; }
       wrap.style.display='block';
-      closeBtn.style.display='block';
+      document.getElementById('gooClose').style.display='block';
       running = true; tLast = 0; balls.length = 0;
       raf = requestAnimationFrame(loop);
       wrap.setAttribute('aria-hidden','false');
     }
     function hide(){
       running = false; cancelAnimationFrame(raf);
-      closeBtn.style.display='none'; wrap.style.display='none';
+      document.getElementById('gooClose').style.display='none';
+      wrap.style.display='none';
       wrap.setAttribute('aria-hidden','true');
     }
     function arm(){
@@ -360,8 +348,8 @@
       idleTimer = setTimeout(show, IDLE_MS);
     }
 
-    closeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
-    wrap.addEventListener('click', ()=>{ hide(); arm(); });
+    document.getElementById('gooClose').addEventListener('click', (e)=>{ e.stopPropagation(); hide(); arm(); });
+    document.getElementById('gooWrap').addEventListener('click', ()=>{ hide(); arm(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ hide(); arm(); } if(e.key.toLowerCase()==='s'){ show(); }});
     ['mousemove','keydown','scroll','touchstart','click'].forEach(ev=>window.addEventListener(ev, arm, {passive:true}));
 
