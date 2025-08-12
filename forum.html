@@ -1,53 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forum – The Occult Reference Net</title>
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Forum — The Occult Reference Net</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3rect width='100%25' height='100%25' fill='black'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
 <style>
-  body {
-    background: black;
-    color: white;
-    font-family: 'Press Start 2P', monospace;
-    text-align: center;
-    margin: 0;
-    padding: 0;
+  :root{ --bg:#000; --fg:#fff; --accent:#00ff99; --muted:#bdbdbd; --border:#333; --card:#070707; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:"Press Start 2P",monospace; font-size:12px; line-height:1.45;
+    overflow-x:hidden; position:relative; cursor:none;
   }
-  header {
-    padding: 20px;
-    font-size: 1.2em;
+  /* CRT overlay */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(0,255,153,.20), rgba(0,0,0,0) 60%),
+      repeating-linear-gradient(0deg, rgba(0,255,153,.09) 0px, rgba(0,255,153,.09) 1px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px);
+    mix-blend-mode:screen; animation:scanFlicker 6s linear infinite;
   }
-  iframe {
-    border: none;
-    width: 100%;
-    height: 90vh;
+  body::after{
+    content:""; position:fixed; inset:0; z-index:1; pointer-events:none;
+    box-shadow: inset 0 0 140px rgba(0,255,153,.22), inset 0 0 340px rgba(0,255,153,.15);
   }
-  .home-btn {
-    display: inline-block;
-    margin: 10px;
-    padding: 8px 12px;
-    border: 1px solid white;
-    text-decoration: none;
-    color: white;
-    font-size: 0.8em;
+  @keyframes scanFlicker{0%{opacity:.25}45%{opacity:.32}50%{opacity:.22}55%{opacity:.32}100%{opacity:.25}}
+
+  /* Header */
+  .wrap{ position:relative; z-index:2; display:flex; flex-direction:column; align-items:center }
+  header{ width:92vw; max-width:1100px; margin:22px auto 10px; display:flex; justify-content:space-between; align-items:center; gap:12px }
+  .h-title{ font-size:18px; letter-spacing:1px; text-shadow:0 0 10px rgba(0,255,153,.22) }
+  .home-btn{ color:#fff; text-decoration:none; border:1px solid #3a3a3a; padding:8px 12px; font-size:10px; }
+  .home-btn:hover{ border-color:var(--accent); text-shadow:0 0 6px rgba(255,255,255,.35) }
+
+  /* Controls */
+  .controls{ width:92vw; max-width:1100px; margin:8px auto 12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+  select, button{
+    background:#000; color:#fff; border:1px solid #3a3a3a; padding:8px 10px; font:inherit; font-size:10px;
   }
-  .home-btn:hover {
-    background: white;
-    color: black;
+  button:hover, select:hover{ border-color:var(--accent); }
+
+  /* Feed */
+  .feed{ width:92vw; max-width:1100px; margin:0 auto 24px; position:relative; z-index:2; display:grid; gap:12px }
+  .post{
+    border:1px solid var(--border); background:var(--card); padding:12px; display:grid; grid-template-columns:1fr 120px; gap:12px;
   }
+  .post .title{ font-size:14px; }
+  .post .title a{ color:var(--accent); text-decoration:underline }
+  .meta{ color:#8ac6ad; font-size:10px; display:flex; gap:10px; flex-wrap:wrap; margin-top:4px }
+  .thumb{ width:120px; height:90px; object-fit:cover; border:1px solid #1a1a1a; background:#000 }
+  .selftext{ color:#dfe; font-size:11px; margin-top:6px; max-height:7.5em; overflow:hidden }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px }
+  .btn{ background:#000; color:#fff; border:1px solid #3a3a3a; padding:6px 10px; font-size:10px; text-decoration:none; cursor:pointer }
+  .btn:hover{ border-color:var(--accent); text-shadow:0 0 6px rgba(255,255,255,.3) }
+
+  .empty, .error{ color:#9fd; border:1px dashed #2b6; padding:12px; background:#041; }
+
+  footer{ margin:18px 0 26px; text-align:center; color:#bdbdbd; font-size:10px; z-index:2; position:relative }
+
+  /* Retro pixel-arrow cursor with glow */
+  .crt-cursor{
+    position:fixed;left:0;top:0;width:26px;height:36px;pointer-events:none;z-index:10002;
+    background:#fff;
+    clip-path:polygon(0% 0%,0% 100%,30% 70%,40% 80%,40% 100%,55% 100%,55% 82%,70% 82%,70% 64%,55% 64%,55% 40%,80% 40%,80% 22%,55% 22%,55% 0%);
+    image-rendering:pixelated;
+    filter:
+      drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000)
+      drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000)
+      drop-shadow(0 0 7px rgba(255,255,255,.85))
+      drop-shadow(0 0 22px rgba(255,255,255,.55))
+      drop-shadow(0 0 60px rgba(255,255,255,.35));
+    transform:translate(-2px,-2px);transition:transform .08s ease-out;
+  }
+  .crt-cursor.click{transform:translate(-2px,-2px) scale(.92)}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <header>
+    <div class="h-title">Forum — r/TheOccultReferenceNet</div>
+    <a class="home-btn" href="index.html">Home</a>
+  </header>
 
-<header>
-  Forum – The Occult Reference Net  
-  <br>
-  <a class="home-btn" href="index.html">Home</a>
-</header>
+  <div class="controls">
+    <label for="sort">Sort:</label>
+    <select id="sort">
+      <option value="hot" selected>Hot</option>
+      <option value="new">New</option>
+      <option value="top">Top</option>
+      <option value="rising">Rising</option>
+    </select>
 
-<!-- Reddit embed -->
-<iframe src="https://www.reddit.com/r/TheOccultReferenceNet/" loading="lazy"></iframe>
+    <label for="t" id="tlabel" style="display:none">Top range:</label>
+    <select id="t" style="display:none">
+      <option value="day">Day</option>
+      <option value="week">Week</option>
+      <option value="month">Month</option>
+      <option value="year">Year</option>
+      <option value="all" selected>All</option>
+    </select>
 
+    <button id="more" class="btn">More</button>
+  </div>
+
+  <div id="feed" class="feed"></div>
+  <div id="msg" class="empty" style="display:none"></div>
+
+  <footer>Helping paranormal investigators everywhere find the things that go bump in the night since © 1989.</footer>
+</div>
+
+<!-- Retro cursor -->
+<script>
+(function(){
+  const cursor=document.createElement('div');
+  cursor.className='crt-cursor';
+  document.body.appendChild(cursor);
+  const hotspotX=2, hotspotY=2;
+  let x=innerWidth/2,y=innerHeight/2,tx=x,ty=y; const speed=.35;
+  function move(e){tx=e.clientX-hotspotX;ty=e.clientY-hotspotY;}
+  function loop(){x+=(tx-x)*speed;y+=(ty-y)*speed;cursor.style.left=x+'px';cursor.style.top=y+'px';requestAnimationFrame(loop);}
+  addEventListener('mousemove',move,{passive:true});
+  addEventListener('mousedown',()=>cursor.classList.add('click'));
+  addEventListener('mouseup',()=>cursor.classList.remove('click'));
+  loop();
+  document.querySelectorAll('input,textarea,select,button,a').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{document.body.style.cursor='default';});
+    el.addEventListener('mouseleave',()=>{document.body.style.cursor='none';});
+  });
+})();
+</script>
+
+<!-- Reddit JSON render -->
+<script>
+const SUBREDDIT = "TheOccultReferenceNet";  // no "r/"
+let after = null;
+
+const feed = document.getElementById('feed');
+const msg = document.getElementById('msg');
+const sortSel = document.getElementById('sort');
+const tSel = document.getElementById('t');
+const tLabel = document.getElementById('tlabel');
+const moreBtn = document.getElementById('more');
+
+function esc(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+function num(n){ if(n>=1000) return (n/1000).toFixed(n<10000?1:0)+"k"; return String(n); }
+
+function thumbFor(post){
+  const t = post.thumbnail;
+  if(t && /^https?:\/\//.test(t) && !/(default|self|nsfw|image|spoiler)/.test(t)) return t;
+  if(post.preview && post.preview.images && post.preview.images[0]?.source?.url){
+    return post.preview.images[0].source.url.replace(/&amp;/g,'&');
+  }
+  return "";
+}
+
+function postHTML(p){
+  const url = p.url_overridden_by_dest || p.url;
+  const thumb = thumbFor(p);
+  const isSelf = p.is_self;
+
+  return `
+    <div class="post">
+      <div>
+        <div class="title"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(p.title)}</a></div>
+        <div class="meta">
+          <span>▲ ${num(p.ups||0)}</span>
+          <span>💬 ${num(p.num_comments||0)}</span>
+          <span>${new Date(p.created_utc*1000).toISOString().slice(0,10)}</span>
+        </div>
+        ${isSelf && p.selftext_html ? `<div class="selftext">${p.selftext_html}</div>` : ``}
+        <div class="actions">
+          <a class="btn" target="_blank" rel="noopener" href="https://www.reddit.com${p.permalink}">View thread</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://www.reddit.com/r/${SUBREDDIT}/submit">New post</a>
+        </div>
+      </div>
+      ${thumb ? `<img class="thumb" src="${esc(thumb)}" alt="">` : `<div></div>`}
+    </div>
+  `;
+}
+
+function showMessage(text, cls="empty"){
+  msg.className = cls;
+  msg.textContent = text;
+  msg.style.display = "block";
+}
+
+async function fetchPosts(reset=false){
+  try{
+    if(reset){ after=null; feed.innerHTML=""; }
+    msg.style.display="none";
+
+    const sort = sortSel.value; // hot/new/top/rising
+    const params = new URLSearchParams({ raw_json:"1", limit:"12" });
+    if(after) params.set("after", after);
+    if(sort==="top"){
+      tSel.style.display="inline-block"; tLabel.style.display="inline-block";
+      params.set("t", tSel.value); // hour/day/week/month/year/all
+    } else {
+      tSel.style.display="none"; tLabel.style.display="none";
+    }
+
+    const url = `https://www.reddit.com/r/${encodeURIComponent(SUBREDDIT)}/${sort}.json?`+params.toString();
+    const r = await fetch(url, { mode:"cors", credentials:"omit" });
+    if(!r.ok) throw new Error("Reddit error: "+r.status);
+    const j = await r.json();
+
+    const children = j?.data?.children || [];
+    after = j?.data?.after || null;
+
+    if(reset && children.length===0){
+      showMessage("No posts yet. Be the first to share a case file or sighting!");
+      return;
+    }
+
+    const html = children.map(c => postHTML(c.data)).join("");
+    feed.insertAdjacentHTML('beforeend', html);
+
+    moreBtn.disabled = !after;
+    moreBtn.textContent = after ? "More" : "No more";
+  }catch(err){
+    console.error(err);
+    showMessage("Could not load Reddit directly (blocked by browser). Click here to open the subreddit.", "error");
+    msg.onclick = ()=> window.open(`https://www.reddit.com/r/${SUBREDDIT}/`, "_blank", "noopener");
+    moreBtn.disabled = true;
+  }
+}
+
+sortSel.addEventListener('change', ()=> fetchPosts(true));
+tSel.addEventListener('change', ()=> fetchPosts(true));
+moreBtn.addEventListener('click', ()=> fetchPosts(false));
+
+// init
+fetchPosts(true);
+</script>
 </body>
 </html>
