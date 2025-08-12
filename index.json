@@ -1,22 +1,38 @@
 [
   {
-    "url": "https://rmc.library.cornell.edu/witchcraftcoll/",
-    "title": "Cornell Witchcraft Collection",
-    "snippet": "An extensive archive on witchcraft trials and related materials.",
-    "source": "rmc.library.cornell.edu",
-    "collection": "Cornell Witchcraft",
-    "type": "collection",
-    "author": "Cornell University Library",
-    "year": 2024
+    "url": "https://embassyofthefreemind.com/en/library/online-catalogue/",
+    "title": "Embassy of the Free Mind – Online Catalogue",
+    "snippet": "Browse Hermetic and esoteric works digitized by the Embassy of the Free Mind library.",
+    "collection": "Embassy of the Free Mind",
+    "author": "",
+    "year": "",
+    "tags": ["hermetic","esoterica","digitized"]
+  },
+  {
+    "url": "https://www.occultlibrary.org/community/resources",
+    "title": "OccultLibrary.org – Community Resources",
+    "snippet": "Community-maintained resources, references, and links related to the occult.",
+    "collection": "Occult Library",
+    "author": "",
+    "year": "",
+    "tags": ["occult","resources"]
   },
   {
     "url": "https://digitaloccultlibrary.commons.gc.cuny.edu/",
     "title": "CUNY Digital Occult Library",
-    "snippet": "Community-driven resources on occult texts and research.",
-    "source": "digitaloccultlibrary.commons.gc.cuny.edu",
+    "snippet": "A CUNY Commons project collecting digitized occult and esoteric materials.",
     "collection": "CUNY Digital Occult Library",
-    "type": "portal",
-    "author": "CUNY",
-    "year": 2023
+    "author": "",
+    "year": "",
+    "tags": ["cuny","digital","occult"]
+  },
+  {
+    "url": "https://rmc.library.cornell.edu/witchcraftcoll/",
+    "title": "Cornell Witchcraft Collection",
+    "snippet": "Rare and digitized materials documenting witchcraft, demonology, and superstition.",
+    "collection": "Cornell University Library",
+    "author": "",
+    "year": "",
+    "tags": ["witchcraft","cornell","history"]
   }
 ]
