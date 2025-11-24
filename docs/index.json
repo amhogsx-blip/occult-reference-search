@@ -349,7 +349,7 @@
       "dol forum insert edit",
       "down arrow"
     ],
-    "thumb": "https://secure.gravatar.com/avatar/4fa2af8deb8853081062aa917a87beb5d679e6170bcc41f9fc55d2a80979f583?s=14&d=mm&r=g"
+    "thumb": "https://secure.gravatar.com/avatar/?s=14&d=mm&r=g"
   },
   {
     "url": "https://digitaloccultlibrary.commons.gc.cuny.edu/",
@@ -478,6 +478,38 @@
       "help with the commons"
     ],
     "thumb": "https://digitaloccultlibrary.commons.gc.cuny.edu/wp-content/blogs.dir/11139/files/2024/05/IMG_0433-150x57.png"
+  },
+  {
+    "url": "https://www.occultlibrary.org/blog",
+    "title": "Blog 3 — The Occult Library",
+    "snippet": "The Occult Library is a free, volunteer-managed resource committed to sharing accurate, up-to-date information. We gather content from publisher and author websites, direct correspondence, staff research and photography, and occasional online searches. If you own any image or text included here and wish to request its removal or proper attribution, please contact us, and we’ll respond promptly.",
+    "is_pdf": false,
+    "filesize": null,
+    "lastmod": null,
+    "pub_date": "2025-01-01",
+    "tags": [
+      "accurate up-to-date",
+      "accurate up-to-date information",
+      "accurate up-to-date information gather",
+      "alex langstone",
+      "alex langstone betwixt",
+      "alex langstone betwixt two",
+      "anatomy book",
+      "anatomy book intro",
+      "anatomy book intro signatures",
+      "anatomy book introduction",
+      "anatomy book introduction paper",
+      "anatomy book three",
+      "anatomy book three printing",
+      "and author",
+      "and author websites",
+      "and author websites direct",
+      "and occasional",
+      "and occasional online",
+      "and occasional online searches",
+      "and photography"
+    ],
+    "thumb": "https://images.squarespace-cdn.com/content/v1/6564d416d8fc0b14f1114ebf/a575a5cc-3649-4a15-ba9c-557e668a1d31/TOLlogodraft1.png?format=1500w"
   },
   {
     "url": "https://digitaloccultlibrary.commons.gc.cuny.edu/academics-guide/",
@@ -708,7 +740,7 @@
     "title": "Resources — The Occult Library",
     "snippet": "For those looking to expand on the information cataloged through the Occult Library, a list of primary & secondary-source materials from the fields of lay scholarship and academic research can be found here. Please select a given resource, where information and links can offer you a pathway to expanding your knowledge of the occult community and its materia.",
     "is_pdf": false,
-    "filesize": 51077,
+    "filesize": 35938,
     "lastmod": null,
     "pub_date": "2004-01-01",
     "tags": [
@@ -740,7 +772,7 @@
     "title": "Resources — The Occult Library",
     "snippet": "For those looking to expand on the information cataloged through the Occult Library, a list of primary & secondary-source materials from the fields of lay scholarship and academic research can be found here. Please select a given resource, where information and links can offer you a pathway to expanding your knowledge of the occult community and its materia.",
     "is_pdf": false,
-    "filesize": 51077,
+    "filesize": 35938,
     "lastmod": null,
     "pub_date": "2004-01-01",
     "tags": [
@@ -868,7 +900,7 @@
     "title": "Tarot Decks — The Occult Library",
     "snippet": "Over the course of centuries, Tarot has captivated and enticed seekers the globe over. The spiritual, personal, and divinatory approaches to Tarot are countless. Just as multitudinous are the expressions of art and craftsmanship found in the design of tarot. In the contemporary era, a wide array of decks and sets can be found, each offering something unique to their respective seekers. Here, you will find a selection of curated tarot decks for exploration and browsing.",
     "is_pdf": false,
-    "filesize": 32172,
+    "filesize": null,
     "lastmod": null,
     "pub_date": "1960-01-01",
     "tags": [
@@ -933,7 +965,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -965,7 +997,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -997,7 +1029,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1029,7 +1061,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1061,7 +1093,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1093,7 +1125,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1125,7 +1157,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1157,7 +1189,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1189,7 +1221,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1221,7 +1253,7 @@
     "snippet": "1900-1949",
     "is_pdf": false,
     "filesize": 34663,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1916-01-01",
     "tags": [
       "and other",
@@ -1284,7 +1316,7 @@
     "title": "Forthcoming — The Occult Library",
     "snippet": "Titles are often announced by publishers many months in advance, often long before even a period of preorder is underway. Our goal with this page to display up to date information on any titles that have been shown as forthcoming. Any listing here shown is done so with the information publically provided and as such is subject to change. If a title is removed from this page but is not listed in the appropriate publisher page this is likely due to the title being removed from the publishers forthcoming roster.",
     "is_pdf": false,
-    "filesize": 34059,
+    "filesize": 34058,
     "lastmod": null,
     "pub_date": "1824-01-01",
     "tags": [
@@ -1509,7 +1541,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1541,7 +1573,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1573,7 +1605,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1605,7 +1637,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1637,7 +1669,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1669,7 +1701,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1701,7 +1733,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1733,7 +1765,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1765,7 +1797,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1797,7 +1829,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1829,7 +1861,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1861,7 +1893,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1893,7 +1925,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -1925,7 +1957,7 @@
     "snippet": "Manuscripts and Documents",
     "is_pdf": false,
     "filesize": 20168,
-    "lastmod": "2025-11-17",
+    "lastmod": "2025-11-24",
     "pub_date": "1560-01-01",
     "tags": [
       "and documents",
@@ -2084,7 +2116,7 @@
     "title": "The Occult Library",
     "snippet": "Welcome to The Occult Library—your volunteer-run, nonprofit hub for all things occult, from books and art, to movies, TV shows, podcasts, and more. We maintain an ever-expanding catalog of active and retired publishers, authors, artists, bookstores, artisans, and beyond. Please note we do not offer reading facilities; instead, our goal is to serve as a central resource for discovering and researching occult materials. We’re continuously growing and adding new features, so be sure to subscribe to our email list to stay informed and be among the first to explore our latest offerings.",
     "is_pdf": false,
-    "filesize": 23981,
+    "filesize": 23967,
     "lastmod": null,
     "pub_date": null,
     "tags": [
@@ -2176,43 +2208,11 @@
     "thumb": "https://embassyofthefreemind.com/images/article/big/hmdh-front-totaal.jpg"
   },
   {
-    "url": "https://www.occultlibrary.org/publications",
-    "title": "Publishers — The Occult Library",
-    "snippet": "Publishers serve as vehicles for elevating, proliferating, and commemorating the work of authors. They offer works which color and express the author’s intent, providing unique pieces to the occult community. Many of these stand alone as works of art in their own right. Within this space, a comprehensive list of a given publisher’s works may be found – each with detailed information and photos. Each material is, in turn, linked to a page for its author. Each author’s adjacent works can be found with ease through an individual page featuring biographical and bibliographic information.",
-    "is_pdf": false,
-    "filesize": null,
-    "lastmod": null,
-    "pub_date": null,
-    "tags": [
-      "adjacent works",
-      "adjacent works can",
-      "adjacent works can found",
-      "alone works",
-      "alone works art",
-      "alone works art their",
-      "and bibliographic",
-      "and bibliographic information",
-      "and commemorating",
-      "and commemorating the",
-      "and commemorating the work",
-      "and express",
-      "and express the",
-      "and express the author",
-      "and photos",
-      "and photos each",
-      "and photos each material",
-      "art their",
-      "art their own",
-      "art their own right"
-    ],
-    "thumb": "https://images.squarespace-cdn.com/content/v1/6564d416d8fc0b14f1114ebf/a575a5cc-3649-4a15-ba9c-557e668a1d31/TOLlogodraft1.png?format=1500w"
-  },
-  {
     "url": "https://www.occultlibrary.org/publishers-2",
     "title": "Publishers — The Occult Library",
     "snippet": "Publishers serve as vehicles for elevating, proliferating, and commemorating the work of authors. They offer works which color and express the author’s intent, providing unique pieces to the occult community. Many of these stand alone as works of art in their own right. Within this space, a comprehensive list of a given publisher’s works may be found – each with detailed information and photos. Each material is, in turn, linked to a page for its author. Each author’s adjacent works can be found with ease through an individual page featuring biographical and bibliographic information.",
     "is_pdf": false,
-    "filesize": 33447,
+    "filesize": null,
     "lastmod": null,
     "pub_date": null,
     "tags": [
@@ -2244,7 +2244,7 @@
     "title": "Periodicals & Zines — The Occult Library",
     "snippet": "In the occult community, periodicals are constituted by journals, zines, pamphlets, and more. Often, publishers are working under the auspices of small press, fine edition environments. However, many diverse publishers large & small offer periodicals. Subjects and topics vary greatly: they range from firsthand essays on practice, to scholarly works on history, folklore, and culture. Below, you will find a list of such periodicals. Within each publications page, a running list of issues and editions can be found. Brief passages of information regarding the publication’s form & content is also displayed.",
     "is_pdf": false,
-    "filesize": 26724,
+    "filesize": 26746,
     "lastmod": null,
     "pub_date": null,
     "tags": [
@@ -2276,7 +2276,7 @@
     "title": "People & Places — The Occult Library",
     "snippet": "The occult community is a constellation of people, groups, organizations, traditions, and cultures. The relationships and bonds between them allow occult lifeways to grow, thrive, and find expression. Below, you will find a number of pages detailing aspects of the occult community. These pages have been included as a resource for supporting and bolstering authors, artists, shops, artisans, events, resources, and more.",
     "is_pdf": false,
-    "filesize": null,
+    "filesize": 29897,
     "lastmod": null,
     "pub_date": null,
     "tags": [
@@ -2340,7 +2340,7 @@
     "title": "Oracle Decks — The Occult Library",
     "snippet": "Oracle decks are unique tools for divination and personal exploration. Distinctly different from their Tarot progenitors, they nonetheless help the seeker to create a story about their lived experiences. Oracle decks lend to a seekers’ intuition, dreams, and personal or cultural symbolic lexicons. Like Tarot and other forms of cartomancy, the artistic and craft expressions of each deck lends to their expressive nature of the cards. Below, you will find a curated selection of oracle decks for browsing and exploring.",
     "is_pdf": false,
-    "filesize": 37966,
+    "filesize": null,
     "lastmod": null,
     "pub_date": null,
     "tags": [
@@ -2720,7 +2720,7 @@
     "title": "Art Gallery — The Occult Library",
     "snippet": "Within this section, a number of visual artists and their works are detailed & displayed. As the aesthetic expressions of the community, artists, illustrators, and their works constitute a vital component of the occult milieu. Many artistic pieces here accompany & adorn the texts of an author or publisher. Others stand alone in their own right as expressions of practice, experience, knowledge, and wisdom. Below, links to selected artists in the community can be found. Within, galleries of their work are displayed. Some of our selected artists have chosen to allow or refrain from accompanying text or descriptions along with their art. In either case, these unique works help express the some of the richest facets of the community. Also included are galleries of non-contemporary artists who are considered iconic in the field.",
     "is_pdf": false,
-    "filesize": 27279,
+    "filesize": null,
     "lastmod": null,
     "pub_date": null,
     "tags": [
